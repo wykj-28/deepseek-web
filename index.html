@@ -122,6 +122,9 @@
         .sidebar-footer {
             padding: 16px;
             border-top: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .settings-btn {
@@ -140,6 +143,30 @@
 
         .settings-btn:active {
             background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        /* 导出导入按钮组 */
+        .backup-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .backup-btn {
+            flex: 1;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #8e8e8e;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .backup-btn:active {
+            background: #2a2a2a;
             color: #e0e0e0;
         }
 
@@ -191,7 +218,6 @@
             border-radius: 12px;
         }
 
-        /* Token 显示区域 */
         .token-stats {
             display: flex;
             align-items: center;
@@ -217,10 +243,6 @@
             cursor: pointer;
             font-size: 14px;
             padding: 0 4px;
-        }
-
-        .token-reset:active {
-            color: #e0e0e0;
         }
 
         .messages-container {
@@ -495,6 +517,11 @@
             text-align: center;
         }
 
+        /* 文件上传隐藏 */
+        #importFile {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .menu-btn {
                 display: flex;
@@ -551,6 +578,10 @@
             <div class="history-list" id="historyList"></div>
             <div class="sidebar-footer">
                 <button class="settings-btn" id="settingsBtn">⚙️ 设置</button>
+                <div class="backup-buttons">
+                    <button class="backup-btn" id="exportBtn">📥 导出</button>
+                    <button class="backup-btn" id="importBtn">📤 导入</button>
+                </div>
             </div>
         </aside>
 
@@ -602,6 +633,9 @@
         </div>
     </div>
 
+    <!-- 隐藏的文件上传 input -->
+    <input type="file" id="importFile" accept=".json">
+
     <script>
         // 存储键名
         const STORAGE_KEYS = {
@@ -613,7 +647,6 @@
         };
 
         // DeepSeek 价格（每百万tokens）
-        // 输入: 0.14元，输出: 0.28元
         const PRICE_INPUT_PER_M = 0.14;
         const PRICE_OUTPUT_PER_M = 0.28;
 
@@ -624,14 +657,15 @@
         let isRegenerating = false;
         
         // Token 统计
-        let totalPromptTokens = 0;      // 累计输入 token
-        let totalCompletionTokens = 0;   // 累计输出 token
+        let totalPromptTokens = 0;
+        let totalCompletionTokens = 0;
 
         // DOM 元素
         let messagesContainer, userInput, sendBtn, apiKeyInput, apiUrlInput;
         let settingsModal, saveApiBtn, modalCloseBtn, newChatBtn, settingsBtn;
         let menuBtn, sidebar, overlay, historyList;
         let tokenUsedSpan, tokenRemainingSpan, resetTokenBtn;
+        let exportBtn, importBtn, importFile;
 
         document.addEventListener('DOMContentLoaded', () => {
             messagesContainer = document.getElementById('messagesContainer');
@@ -650,6 +684,9 @@
             tokenUsedSpan = document.querySelector('.token-used');
             tokenRemainingSpan = document.querySelector('.token-remaining');
             resetTokenBtn = document.getElementById('resetTokenBtn');
+            exportBtn = document.getElementById('exportBtn');
+            importBtn = document.getElementById('importBtn');
+            importFile = document.getElementById('importFile');
 
             if (window.innerWidth <= 768) {
                 overlay = document.createElement('div');
@@ -718,7 +755,7 @@
                 if (window.innerWidth <= 768) toggleSidebar();
             });
 
-            // 重置 Token 统计
+            // 重置 Token
             resetTokenBtn.addEventListener('click', () => {
                 if (confirm('确定要重置 Token 统计吗？')) {
                     totalPromptTokens = 0;
@@ -728,13 +765,99 @@
                 }
             });
 
+            // 导出数据
+            exportBtn.addEventListener('click', exportData);
+
+            // 导入数据
+            importBtn.addEventListener('click', () => {
+                importFile.click();
+            });
+            importFile.addEventListener('change', importData);
+
             userInput.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 100) + 'px';
             });
         });
 
-        // 更新 Token 显示
+        // 导出所有数据
+        function exportData() {
+            const exportData = {
+                version: '1.0',
+                exportTime: new Date().toISOString(),
+                allChats: allChats,
+                currentChatId: currentChatId,
+                totalPromptTokens: totalPromptTokens,
+                totalCompletionTokens: totalCompletionTokens
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `deepseek_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('导出成功！文件已保存到下载文件夹');
+        }
+
+        // 导入数据
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    // 验证数据格式
+                    if (imported.allChats && typeof imported.allChats === 'object') {
+                        // 合并导入的对话（不覆盖已有的同名对话，用导入的覆盖）
+                        allChats = { ...imported.allChats };
+                        
+                        // 恢复 Token 统计
+                        if (imported.totalPromptTokens !== undefined) {
+                            totalPromptTokens = imported.totalPromptTokens;
+                            totalCompletionTokens = imported.totalCompletionTokens || 0;
+                            saveTokenStats();
+                            updateTokenDisplay();
+                        }
+                        
+                        // 保存到 localStorage
+                        saveAllChats();
+                        
+                        // 恢复当前对话
+                        if (imported.currentChatId && allChats[imported.currentChatId]) {
+                            switchToChat(imported.currentChatId);
+                        } else {
+                            const firstChatId = Object.keys(allChats)[0];
+                            if (firstChatId) {
+                                switchToChat(firstChatId);
+                            } else {
+                                createNewChat();
+                            }
+                        }
+                        
+                        renderHistoryList();
+                        alert('导入成功！');
+                    } else {
+                        alert('文件格式错误，无法导入');
+                    }
+                } catch (err) {
+                    alert('文件解析失败：' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // 清空 input，以便再次导入同一个文件
+            importFile.value = '';
+        }
+
         function updateTokenDisplay() {
             const totalTokens = totalPromptTokens + totalCompletionTokens;
             const cost = (totalPromptTokens / 1000000 * PRICE_INPUT_PER_M + 
@@ -742,7 +865,6 @@
             
             tokenUsedSpan.innerHTML = `📊 ${totalTokens.toLocaleString()}`;
             
-            // 显示预估费用（单位：元）
             if (totalTokens > 0) {
                 tokenRemainingSpan.innerHTML = `💰 ¥${cost}`;
             } else {
@@ -750,7 +872,6 @@
             }
         }
 
-        // 保存 Token 统计
         function saveTokenStats() {
             localStorage.setItem(STORAGE_KEYS.TOTAL_TOKENS, JSON.stringify({
                 prompt: totalPromptTokens,
@@ -758,7 +879,6 @@
             }));
         }
 
-        // 加载 Token 统计
         function loadTokenStats() {
             const saved = localStorage.getItem(STORAGE_KEYS.TOTAL_TOKENS);
             if (saved) {
@@ -770,7 +890,6 @@
             }
         }
 
-        // 累加 Token
         function addTokens(promptTokens, completionTokens) {
             totalPromptTokens += promptTokens;
             totalCompletionTokens += completionTokens;
@@ -994,7 +1113,6 @@
                 const result = await callDeepSeekAPI(currentMessages);
                 removeLoadingMessage(loadingId);
                 
-                // 累加 Token
                 addTokens(result.promptTokens, result.completionTokens);
                 
                 addMessageToUI(result.content, 'assistant');
@@ -1041,7 +1159,6 @@
                 const result = await callDeepSeekAPI(currentMessages);
                 removeLoadingMessage(loadingId);
                 
-                // 重新生成也会消耗 token，需要累加
                 addTokens(result.promptTokens, result.completionTokens);
                 
                 addMessageToUI(result.content, 'assistant');
@@ -1139,7 +1256,6 @@
 
             const data = await response.json();
             
-            // 提取 token 用量
             const promptTokens = data.usage?.prompt_tokens || 0;
             const completionTokens = data.usage?.completion_tokens || 0;
             const content = data.choices[0].message.content;
@@ -1206,7 +1322,7 @@
             
             messageDiv.appendChild(contentDiv);
             messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
             return messageDiv;
         }
