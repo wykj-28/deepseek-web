@@ -356,7 +356,45 @@
         setLoadingState(l){state.isLoading=l;DOM.sendBtn.disabled=l;DOM.userInput.disabled=l;DOM.attachBtn.disabled=l;}
     };
     const chatActions = {
-        async handleEditConfirm(index,newContent,resetFollowing){const msg=state.currentMessages[index];addMessageVersion(msg,newContent);if(resetFollowing){state.currentMessages=state.currentMessages.slice(0,index+1);msg.branchParentId=msg.branchParentId||'branch_'+utils.generateId();}contextManager.syncFromDisplayMessages();chatManager.saveCurrent();ui.renderMessages();contextManager.updateContextBar();},
+async handleEditConfirm(index, newContent, resetFollowing) {
+    const msg = state.currentMessages[index];
+    addMessageVersion(msg, newContent);
+    if (resetFollowing) {
+        state.currentMessages = state.currentMessages.slice(0, index + 1);
+        msg.branchParentId = msg.branchParentId || 'branch_' + utils.generateId();
+        contextManager.syncFromDisplayMessages();
+        chatManager.saveCurrent();
+        ui.renderMessages();
+        contextManager.updateContextBar();
+        // 自动发送给AI生成新回复
+        const { apiKey } = api.getConfig();
+        if (!apiKey) { utils.showToast('请先配置 API Key'); return; }
+        ui.setLoadingState(true); ui.showLoading();
+        try {
+            const result = await api.callDeepSeek(contextManager.buildApiMessages());
+            ui.hideLoading();
+            tokenManager.add(result.promptTokens, result.completionTokens);
+            const am = createMessage('assistant', result.content);
+            am.epoch = state.contextEpoch;
+            state.currentMessages.push(am);
+            contextManager.syncFromDisplayMessages();
+            chatManager.saveCurrent();
+            ui.renderMessages();
+            contextManager.updateContextBar();
+            ui.scrollToBottom();
+        } catch (e) {
+            ui.hideLoading();
+            utils.showToast(e.message);
+        } finally {
+            ui.setLoadingState(false);
+        }
+    } else {
+        contextManager.syncFromDisplayMessages();
+        chatManager.saveCurrent();
+        ui.renderMessages();
+        contextManager.updateContextBar();
+    }
+},
         async sendMessage(){if(state.isLoading)return;const msg=DOM.userInput.value.trim(),hf=state.pendingFiles.length>0;if(!msg&&!hf)return;DOM.userInput.value='';DOM.userInput.style.height='auto';const w=DOM.messagesContainer.querySelector('.welcome-message');if(w)w.remove();let fc=msg;if(hf){const fctx=fileManager.buildContext();fc=msg?msg+fctx:'请分析以下文件：'+fctx;}const mObj=createMessage('user',fc);mObj.files=state.pendingFiles.map(f=>({name:f.name,size:f.size}));mObj.epoch=state.contextEpoch;state.currentMessages.push(mObj);fileManager.clear();contextManager.syncFromDisplayMessages();chatManager.saveCurrent();ui.renderMessages();ui.scrollToBottom();contextManager.updateContextBar();const{apiKey}=api.getConfig();if(!apiKey){utils.showToast('请先配置 API Key');DOM.settingsModal.classList.add('active');return;}ui.setLoadingState(true);ui.showLoading();try{const result=await api.callDeepSeek(contextManager.buildApiMessages());ui.hideLoading();tokenManager.add(result.promptTokens,result.completionTokens);const am=createMessage('assistant',result.content);am.epoch=state.contextEpoch;state.currentMessages.push(am);contextManager.syncFromDisplayMessages();chatManager.saveCurrent();ui.renderMessages();contextManager.updateContextBar();ui.scrollToBottom();}catch(e){ui.hideLoading();const em=createMessage('assistant','❌ '+e.message);state.currentMessages.push(em);ui.renderMessages();}finally{ui.setLoadingState(false);}},
         async regenerate(userIndex,assistantIndex,improvementNote){if(state.isLoading)return;state.currentMessages=state.currentMessages.slice(0,userIndex+1);if(improvementNote&&improvementNote.trim()){const sm=createMessage('system','用户改进需求：'+improvementNote.trim());sm.epoch=state.contextEpoch;state.currentMessages.push(sm);}contextManager.syncFromDisplayMessages();ui.renderMessages();contextManager.updateContextBar();const{apiKey}=api.getConfig();if(!apiKey){utils.showToast('请先配置 API Key');return;}ui.setLoadingState(true);ui.showLoading();try{const result=await api.callDeepSeek(contextManager.buildApiMessages());ui.hideLoading();tokenManager.add(result.promptTokens,result.completionTokens);const am=createMessage('assistant',result.content);am.epoch=state.contextEpoch;state.currentMessages.push(am);contextManager.syncFromDisplayMessages();chatManager.saveCurrent();ui.renderMessages();contextManager.updateContextBar();ui.scrollToBottom();}catch(e){ui.hideLoading();utils.showToast(e.message);}finally{ui.setLoadingState(false);}},
         async reactivatePersona(){const persona=personaManager.getPersona();if(!persona){utils.showToast('请先设置人设（点击AI头像）');ui.openPersonaModal();return;}if(state.isLoading)return;const sysMsg=createMessage('system','【请重新严格遵循以下人设】\n'+persona);sysMsg.epoch=state.contextEpoch;state.currentMessages.push(sysMsg);contextManager.syncFromDisplayMessages();chatManager.saveCurrent();contextManager.updateContextBar();ui.setLoadingState(true);ui.showLoading();try{const result=await api.callDeepSeek(contextManager.buildApiMessages());ui.hideLoading();tokenManager.add(result.promptTokens,result.completionTokens);state.currentMessages.pop();const am=createMessage('assistant',result.content);am.epoch=state.contextEpoch;state.currentMessages.push(am);contextManager.syncFromDisplayMessages();chatManager.saveCurrent();ui.renderMessages();contextManager.updateContextBar();ui.scrollToBottom();utils.showToast('人设已重新激活');}catch(e){ui.hideLoading();state.currentMessages.pop();utils.showToast(e.message);}finally{ui.setLoadingState(false);}},
