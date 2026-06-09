@@ -3,581 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>DeepSeek</title>
+    <title>DeepSeek Chat</title>
+    <meta name="description" content="DeepSeek AI 聊天助手">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
-            background: #0f0f0f;
-            height: 100%;
-        }
-
-        .app {
-            display: flex;
-            height: 100%;
-            width: 100%;
-            background: #0f0f0f;
-            overflow: hidden;
-        }
-
-        /* 侧边栏 */
-        .sidebar {
-            width: 280px;
-            background: #0a0a0a;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #2a2a2a;
-            transition: transform 0.3s ease;
-            z-index: 20;
-            height: 100%;
-        }
-
-        .sidebar-header {
-            padding: 16px 12px;
-        }
-
-        .new-chat-btn {
-            width: 100%;
-            padding: 12px 16px;
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 10px;
-            color: #e0e0e0;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .new-chat-btn:active {
-            background: #252525;
-        }
-
-        .history-list {
-            flex: 1;
-            padding: 8px 12px;
-            overflow-y: auto;
-        }
-
-        .history-date {
-            padding: 12px 8px 4px;
-            font-size: 12px;
-            color: #6b6b6b;
-        }
-
-        .history-item {
-            padding: 10px 12px;
-            margin: 2px 0;
-            border-radius: 10px;
-            color: #d0d0d0;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .history-item:hover {
-            background: #1a1a1a;
-        }
-
-        .history-item.active {
-            background: #1a1a1a;
-            color: #10a37f;
-        }
-
-        .history-title {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .delete-chat {
-            background: transparent;
-            border: none;
-            color: #6b6b6b;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0 4px;
-            display: none;
-        }
-
-        .history-item:hover .delete-chat {
-            display: block;
-        }
-
-        .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid #2a2a2a;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .settings-btn {
-            width: 100%;
-            padding: 10px;
-            background: transparent;
-            border: none;
-            border-radius: 10px;
-            color: #8e8e8e;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .settings-btn:active {
-            background: #1a1a1a;
-            color: #e0e0e0;
-        }
-
-        /* 导出导入按钮组 */
-        .backup-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .backup-btn {
-            flex: 1;
-            padding: 8px;
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            color: #8e8e8e;
-            font-size: 12px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .backup-btn:active {
-            background: #2a2a2a;
-            color: #e0e0e0;
-        }
-
-        /* 主区域 */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #0f0f0f;
-            min-width: 0;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .chat-header {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #2a2a2a;
-            flex-shrink: 0;
-        }
-
-        .menu-btn {
-            background: transparent;
-            border: none;
-            color: #e0e0e0;
-            font-size: 20px;
-            cursor: pointer;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #e0e0e0;
-            font-weight: 500;
-        }
-
-        .model-tag {
-            font-size: 12px;
-            color: #6b6b6b;
-            background: #1a1a1a;
-            padding: 2px 8px;
-            border-radius: 12px;
-        }
-
-        .token-stats {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #1a1a1a;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
-        .token-used {
-            color: #10a37f;
-        }
-
-        .token-remaining {
-            color: #ffb74d;
-        }
-
-        .token-reset {
-            background: transparent;
-            border: none;
-            color: #6b6b6b;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 0 4px;
-        }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 0;
-            min-height: 0;
-        }
-
-        .welcome-message {
-            text-align: center;
-            padding: 80px 20px;
-        }
-
-        .welcome-message h1 {
-            color: #e0e0e0;
-            font-size: 28px;
-            margin-bottom: 12px;
-        }
-
-        .welcome-message p {
-            color: #6b6b6b;
-        }
-
-        .message {
-            display: flex;
-            padding: 20px 16px;
-        }
-
-        .message.user {
-            background: #0f0f0f;
-        }
-
-        .message.assistant {
-            background: #1a1a1a;
-        }
-
-        .message-content {
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .message-row {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .message.user .avatar {
-            background: #10a37f;
-        }
-
-        .message.assistant .avatar {
-            background: #2a2a2a;
-        }
-
-        .text {
-            flex: 1;
-            color: #e0e0e0;
-            line-height: 1.5;
-            font-size: 15px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .message-actions {
-            display: flex;
-            gap: 12px;
-            margin-left: 44px;
-            margin-top: 8px;
-        }
-
-        .action-btn {
-            background: #2a2a2a;
-            border: none;
-            color: #8e8e8e;
-            cursor: pointer;
-            font-size: 12px;
-            padding: 6px 14px;
-            border-radius: 20px;
-        }
-
-        .action-btn:active {
-            background: #3a3a3a;
-        }
-
-        .edit-textarea {
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #10a37f;
-            border-radius: 12px;
-            color: #e0e0e0;
-            font-size: 15px;
-            font-family: inherit;
-            padding: 12px;
-            resize: vertical;
-        }
-
-        .edit-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .edit-save {
-            background: #10a37f;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .edit-cancel {
-            background: #2a2a2a;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 25px;
-            color: #8e8e8e;
-            cursor: pointer;
-        }
-
-        .input-area {
-            padding: 12px 16px 20px;
-            background: #0f0f0f;
-            flex-shrink: 0;
-            border-top: 1px solid #2a2a2a;
-        }
-
-        .input-box {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 12px 48px 12px 16px;
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 28px;
-            color: #e0e0e0;
-            font-size: 15px;
-            font-family: inherit;
-            resize: none;
-            outline: none;
-        }
-
-        textarea:focus {
-            border-color: #10a37f;
-        }
-
-        .send-icon {
-            position: absolute;
-            right: 12px;
-            bottom: 10px;
-            background: #2a2a2a;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            color: #8e8e8e;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .send-icon:active {
-            background: #10a37f;
-            color: white;
-        }
-
-        .disclaimer {
-            text-align: center;
-            font-size: 11px;
-            color: #4a4a4a;
-            margin-top: 10px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-card {
-            background: #1a1a1a;
-            border-radius: 16px;
-            width: 420px;
-            max-width: 90%;
-            border: 1px solid #2a2a2a;
-        }
-
-        .modal-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #2a2a2a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            color: #e0e0e0;
-            font-size: 18px;
-        }
-
-        .modal-close {
-            background: transparent;
-            border: none;
-            color: #8e8e8e;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-body label {
-            display: block;
-            color: #8e8e8e;
-            font-size: 13px;
-            margin: 12px 0 6px;
-        }
-
-        .modal-body input {
-            width: 100%;
-            padding: 12px;
-            background: #0f0f0f;
-            border: 1px solid #2a2a2a;
-            border-radius: 10px;
-            color: #e0e0e0;
-            font-size: 14px;
-        }
-
-        .save-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background: #10a37f;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .hint {
-            font-size: 11px;
-            color: #4a4a4a;
-            margin-top: 12px;
-            text-align: center;
-        }
-
-        /* 文件上传隐藏 */
-        #importFile {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.mobile-visible {
-                transform: translateX(0);
-                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 15;
-                display: none;
-            }
-
-            .overlay.active {
-                display: block;
-            }
-            
-            .message-actions {
-                margin-left: 44px;
-            }
-            
-            .token-stats {
-                font-size: 10px;
-                padding: 4px 10px;
-                gap: 8px;
-            }
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #0a0a0a;
+            --border-color: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8e8e8e;
+            --text-muted: #6b6b6b;
+            --accent: #10a37f;
+            --accent-hover: #0d8c6d;
+            --warning: #ffb74d;
+            --danger: #ef5350;
+            --wechat-green: #95EC69;
+            --wechat-white: #FFFFFF;
+            --wechat-bg: #ededed;
+            --radius-sm: 8px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 28px;
+            --transition: 0.2s ease;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg-primary);color:var(--text-primary);-webkit-tap-highlight-color:transparent;user-select:none;}
+        .app{display:flex;height:100%;width:100%;overflow:hidden;position:relative;}
+
+        .sidebar{width:280px;background:var(--bg-tertiary);display:flex;flex-direction:column;border-right:1px solid var(--border-color);transition:transform var(--transition);z-index:20;height:100%;flex-shrink:0;}
+        .sidebar-header{padding:16px 12px;flex-shrink:0;}
+        .new-chat-btn{width:100%;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background var(--transition);}
+        .new-chat-btn:hover{background:#252525;}
+        .history-list{flex:1;padding:8px 12px;overflow-y:auto;overflow-x:hidden;}
+        .history-list::-webkit-scrollbar{width:4px;}
+        .history-list::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:2px;}
+        .history-date{padding:12px 8px 4px;font-size:12px;color:var(--text-muted);font-weight:500;}
+        .history-item{padding:10px 12px;margin:2px 0;border-radius:var(--radius-md);color:#d0d0d0;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background var(--transition);}
+        .history-item:hover{background:var(--bg-secondary);}
+        .history-item.active{background:var(--bg-secondary);color:var(--accent);}
+        .history-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+        .delete-chat{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px 8px;border-radius:4px;opacity:0;transition:opacity var(--transition),color var(--transition);flex-shrink:0;}
+        .history-item:hover .delete-chat{opacity:1;}
+        .delete-chat:hover{color:var(--danger);}
+        .sidebar-footer{padding:16px;border-top:1px solid var(--border-color);display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+        .sidebar-btn{width:100%;padding:10px;background:transparent;border:none;border-radius:var(--radius-md);color:var(--text-secondary);font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:all var(--transition);}
+        .sidebar-btn:hover{background:var(--bg-secondary);color:var(--text-primary);}
+        .sidebar-btn.active-style{background:var(--bg-secondary);color:var(--accent);}
+        .backup-buttons{display:flex;gap:8px;margin-top:4px;}
+        .backup-btn{flex:1;padding:8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:12px;cursor:pointer;text-align:center;transition:all var(--transition);}
+        .backup-btn:hover{background:#2a2a2a;color:var(--text-primary);}
+
+        .main{flex:1;display:flex;flex-direction:column;background:var(--bg-primary);min-width:0;height:100%;overflow:hidden;position:relative;}
+
+        .main-menu-btn{position:absolute;top:12px;left:12px;z-index:10;background:rgba(0,0,0,0.5);border:none;color:var(--text-primary);font-size:20px;cursor:pointer;width:36px;height:36px;border-radius:var(--radius-sm);display:none;align-items:center;justify-content:center;flex-shrink:0;backdrop-filter:blur(4px);}
+        .main-menu-btn:hover{background:rgba(0,0,0,0.7);}
+
+        .chat-header{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);flex-shrink:0;gap:12px;}
+        .header-left{display:flex;align-items:center;gap:12px;min-width:0;}
+        .header-title{display:flex;align-items:center;gap:8px;color:var(--text-primary);font-weight:500;min-width:0;}
+        .model-tag{font-size:12px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:12px;flex-shrink:0;}
+        .header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+        .header-actions{display:flex;gap:6px;}
+        .header-action-btn{background:var(--bg-secondary);border:1px solid var(--border-color);color:var(--text-secondary);cursor:pointer;font-size:11px;padding:5px 10px;border-radius:16px;transition:all var(--transition);white-space:nowrap;display:flex;align-items:center;gap:4px;}
+        .header-action-btn:hover{background:#2a2a2a;color:var(--text-primary);}
+        .token-stats{display:flex;align-items:center;gap:8px;background:var(--bg-secondary);padding:6px 14px;border-radius:20px;font-size:12px;white-space:nowrap;}
+        .token-used{color:var(--accent);}
+        .token-remaining{color:var(--warning);}
+        .token-reset{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 4px;transition:color var(--transition);}
+        .token-reset:hover{color:var(--text-primary);}
+        .context-bar{height:3px;background:var(--border-color);flex-shrink:0;position:relative;}
+        .context-bar-fill{height:100%;background:var(--accent);transition:width 0.5s ease,background 0.3s ease;}
+        .context-bar-fill.warning{background:var(--warning);}
+        .context-bar-fill.danger{background:var(--danger);}
+
+        .wechat-header{display:none;padding:12px 50px;text-align:center;flex-shrink:0;position:relative;z-index:5;background:var(--wechat-bg);border-bottom:1px solid #d9d9d9;}
+        .wechat-header .chat-note{font-size:16px;font-weight:600;color:#000;cursor:pointer;padding:4px 8px;border-radius:4px;transition:background var(--transition);}
+        .wechat-header .chat-note:hover{background:rgba(0,0,0,0.05);}
+        .wechat-header .chat-note-input{font-size:16px;font-weight:600;color:#000;background:transparent;border:none;border-bottom:1px solid var(--accent);text-align:center;outline:none;width:60%;font-family:inherit;}
+
+        .messages-container{flex:1;overflow-y:auto;padding:20px 0;min-height:0;scroll-behavior:smooth;background:var(--bg-primary);}
+        .messages-container::-webkit-scrollbar{width:6px;}
+        .messages-container::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;}
+        .messages-container.wechat-bg{background-color:var(--wechat-bg);background-size:cover;background-position:center;background-repeat:no-repeat;}
+
+        .welcome-message{text-align:center;padding:80px 20px;}
+        .welcome-message h1{color:var(--text-primary);font-size:28px;margin-bottom:12px;}
+        .welcome-message p{color:var(--text-muted);font-size:15px;}
+        .wechat-bg .welcome-message h1{color:#000;}
+        .wechat-bg .welcome-message p{color:#888;}
+
+        .message{display:flex;padding:20px 16px;animation:fadeIn 0.3s ease;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+        .message.user{background:var(--bg-primary);}
+        .message.assistant{background:var(--bg-secondary);}
+        .message-content{max-width:800px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:8px;}
+        .message-row{display:flex;gap:12px;width:100%;}
+        .avatar{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:default;transition:all var(--transition);}
+        .message.user .avatar{background:var(--accent);}
+        .message.assistant .avatar{background:#2a2a2a;cursor:pointer;}
+        .message.assistant .avatar:hover{background:#3a3a3a;transform:scale(1.1);}
+        .message.assistant .avatar.has-persona{border:2px solid var(--accent);}
+        .text{flex:1;color:var(--text-primary);line-height:1.6;font-size:15px;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;}
+        .text code{background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-size:13px;font-family:'SF Mono','Monaco',monospace;}
+        .text pre{background:#0a0a0a;padding:12px;border-radius:var(--radius-sm);overflow-x:auto;margin:8px 0;border:1px solid var(--border-color);}
+        .text pre code{background:none;padding:0;}
+
+        .message.wechat-msg{display:flex;padding:8px 16px;animation:fadeIn 0.3s ease;background:transparent;}
+        .message.wechat-msg.user{justify-content:flex-end;}
+        .message.wechat-msg.assistant{justify-content:flex-start;}
+        .wechat-time-divider{text-align:center;padding:8px 0;}
+        .wechat-time-divider span{font-size:11px;color:#b0b0b0;background:rgba(0,0,0,0.1);padding:3px 10px;border-radius:3px;}
+        .wechat-bubble{max-width:70%;padding:10px 14px;border-radius:18px;font-size:15px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;position:relative;}
+        .message.wechat-msg.user .wechat-bubble{background:var(--wechat-green);color:#000;border-top-right-radius:4px;}
+        .message.wechat-msg.assistant .wechat-bubble{background:var(--wechat-white);color:#000;border-top-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.1);}
+        .wechat-avatar{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin:0 8px;}
+        .message.wechat-msg.user .wechat-avatar{background:var(--accent);order:2;}
+        .message.wechat-msg.assistant .wechat-avatar{background:#d0d0d0;order:0;cursor:pointer;}
+        .message.wechat-msg.assistant .wechat-avatar.has-persona{border:2px solid var(--accent);}
+        .wechat-bubble .bubble-actions{display:flex;gap:4px;margin-top:6px;justify-content:flex-end;}
+        .wechat-bubble .bubble-btn{background:transparent;border:none;cursor:pointer;font-size:14px;padding:2px 4px;border-radius:4px;opacity:0.6;transition:all var(--transition);color:inherit;}
+        .wechat-bubble .bubble-btn:hover{opacity:1;background:rgba(0,0,0,0.1);}
+
+        .divider{display:flex;align-items:center;gap:10px;padding:12px 16px;max-width:800px;margin:0 auto;width:100%;}
+        .divider-line{flex:1;height:1px;background:var(--border-color);}
+        .divider-text{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+        .wechat-bg .divider-text{color:#888;}
+        .wechat-bg .divider-line{background:#d9d9d9;}
+
+        .file-attachment{display:inline-flex;align-items:center;gap:8px;background:#1e1e1e;border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:8px 12px;margin-top:4px;font-size:13px;color:var(--text-secondary);}
+        .file-attachment .file-name{color:var(--text-primary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .file-attachment .file-size{color:var(--text-muted);font-size:11px;}
+
+        .message-actions{display:flex;gap:8px;margin-left:44px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+        .action-btn{background:#2a2a2a;border:none;color:var(--text-secondary);cursor:pointer;font-size:12px;padding:6px 14px;border-radius:20px;transition:all var(--transition);}
+        .action-btn:hover{background:#3a3a3a;color:var(--text-primary);}
+        .action-btn.copy-success{background:var(--accent);color:white;}
+
+        .version-switcher{display:inline-flex;align-items:center;gap:6px;background:#2a2a2a;border-radius:20px;padding:4px 8px;font-size:12px;}
+        .version-switcher .ver-btn{background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:all var(--transition);}
+        .version-switcher .ver-btn:hover{color:var(--text-primary);background:#3a3a3a;}
+        .version-switcher .ver-btn:disabled{opacity:0.3;cursor:not-allowed;}
+        .version-switcher .ver-info{color:var(--text-muted);min-width:40px;text-align:center;}
+        .branch-indicator{display:inline-flex;align-items:center;gap:4px;background:rgba(255,183,77,0.15);color:var(--warning);font-size:11px;padding:4px 10px;border-radius:12px;}
+
+        .context-menu{position:fixed;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);z-index:3000;min-width:140px;box-shadow:0 8px 30px rgba(0,0,0,0.5);display:none;animation:fadeIn 0.15s ease;}
+        .context-menu.active{display:block;}
+        .context-menu-item{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text-primary);display:flex;align-items:center;gap:8px;transition:background var(--transition);}
+        .context-menu-item:hover{background:#2a2a2a;}
+        .context-menu-item:first-child{border-radius:var(--radius-md) var(--radius-md) 0 0;}
+        .context-menu-item:last-child{border-radius:0 0 var(--radius-md) var(--radius-md);}
+
+        .edit-textarea{width:100%;background:var(--bg-secondary);border:1px solid var(--accent);border-radius:12px;color:var(--text-primary);font-size:15px;font-family:inherit;padding:12px;resize:vertical;min-height:60px;line-height:1.5;}
+        .edit-textarea:focus{outline:none;box-shadow:0 0 0 2px rgba(16,163,127,0.3);}
+        .edit-actions{display:flex;gap:10px;margin-top:10px;}
+        .edit-save{background:var(--accent);border:none;padding:8px 20px;border-radius:25px;color:white;cursor:pointer;font-size:13px;}
+        .edit-cancel{background:#2a2a2a;border:none;padding:8px 20px;border-radius:25px;color:var(--text-secondary);cursor:pointer;font-size:13px;}
+
+        .input-area{padding:12px 16px 20px;background:var(--bg-primary);flex-shrink:0;border-top:1px solid var(--border-color);}
+        .input-area.wechat-input-area{background:var(--wechat-bg);border-top:1px solid #d9d9d9;}
+        .input-wrapper{max-width:800px;margin:0 auto;}
+        .input-wrapper.drag-over .input-box{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,163,127,0.2);}
+        .file-preview-area{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;max-width:800px;margin-left:auto;margin-right:auto;}
+        .file-preview-item{display:inline-flex;align-items:center;gap:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:6px 10px;font-size:12px;animation:fadeIn 0.2s ease;}
+        .wechat-input-area .file-preview-item{background:#fff;border-color:#d9d9d9;color:#000;}
+        .file-preview-item .fp-name{color:var(--text-primary);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .wechat-input-area .file-preview-item .fp-name{color:#000;}
+        .file-preview-item .fp-size{color:var(--text-muted);font-size:10px;}
+        .file-preview-item .fp-remove{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:1px 4px;border-radius:3px;}
+        .file-preview-item .fp-remove:hover{color:var(--danger);}
+        .input-box{position:relative;}
+        .input-box textarea{width:100%;padding:12px 48px 12px 40px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-xl);color:var(--text-primary);font-size:15px;font-family:inherit;resize:none;outline:none;line-height:1.5;max-height:120px;transition:border-color var(--transition);}
+        .input-box.wechat-input-box textarea{background:#fff;border:1px solid #d9d9d9;color:#000;border-radius:24px;padding:10px 48px 10px 40px;}
+        .input-box textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(16,163,127,0.15);}
+        .attach-btn{position:absolute;left:8px;bottom:8px;background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:18px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+        .attach-btn:hover{color:var(--accent);background:rgba(16,163,127,0.1);}
+        .send-btn{position:absolute;right:8px;bottom:8px;background:#2a2a2a;border:none;width:32px;height:32px;border-radius:50%;color:var(--text-secondary);cursor:pointer;font-size:16px;transition:all var(--transition);display:flex;align-items:center;justify-content:center;}
+        .wechat-input-box .send-btn{background:var(--accent);color:#fff;}
+        .send-btn:hover{background:var(--accent);color:white;}
+        .send-btn:disabled{opacity:0.5;cursor:not-allowed;}
+        .disclaimer{text-align:center;font-size:11px;color:#4a4a4a;margin-top:8px;}
+        .wechat-input-area .disclaimer{color:#999;}
+
+        .typing-indicator{display:flex;gap:4px;padding:4px 0;}
+        .typing-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);animation:typingBounce 1.4s ease-in-out infinite;}
+        .typing-dot:nth-child(2){animation-delay:0.2s;}.typing-dot:nth-child(3){animation-delay:0.4s;}
+        @keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:0.4;}30%{transform:translateY(-8px);opacity:1;}}
+
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center;animation:fadeIn 0.2s ease;}
+        .modal-overlay.active{display:flex;}
+        .modal-card{background:var(--bg-secondary);border-radius:var(--radius-lg);width:460px;max-width:90%;max-height:85vh;overflow-y:auto;border:1px solid var(--border-color);box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:slideUp 0.2s ease;}
+        @keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+        .modal-header{padding:16px 20px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;}
+        .modal-header h3{color:var(--text-primary);font-size:18px;}
+        .modal-close{background:transparent;border:none;color:var(--text-secondary);font-size:24px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+        .modal-close:hover{background:#2a2a2a;color:var(--text-primary);}
+        .modal-body{padding:20px;}
+        .modal-body label{display:block;color:var(--text-secondary);font-size:13px;margin:12px 0 6px;}
+        .modal-body input,.modal-body textarea{width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px;font-family:inherit;transition:border-color var(--transition);}
+        .modal-body textarea{resize:vertical;min-height:80px;}
+        .modal-body input:focus,.modal-body textarea:focus{outline:none;border-color:var(--accent);}
+        .modal-body .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+        .btn-primary{flex:1;min-width:80px;padding:10px 16px;background:var(--accent);border:none;border-radius:var(--radius-md);color:white;cursor:pointer;font-size:13px;font-weight:500;transition:background var(--transition);}
+        .btn-primary:hover{background:var(--accent-hover);}
+        .btn-secondary{flex:1;min-width:80px;padding:10px 16px;background:#2a2a2a;border:none;border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;font-size:13px;transition:background var(--transition);}
+        .btn-secondary:hover{background:#3a3a3a;}
+        .btn-warning{flex:1;min-width:80px;padding:10px 16px;background:var(--warning);border:none;border-radius:var(--radius-md);color:#000;cursor:pointer;font-size:13px;font-weight:500;}
+        .btn-warning:hover{opacity:0.85;}
+        .hint{font-size:11px;color:#4a4a4a;margin-top:12px;text-align:center;line-height:1.4;}
+        .shortcut-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
+        .shortcut-row select{flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);font-size:13px;}
+        .shortcut-row select:focus{outline:none;border-color:var(--accent);}
+        .modal-stats{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-primary);border-radius:var(--radius-md);margin-top:12px;font-size:12px;}
+        .modal-stats .stat-item{display:flex;align-items:center;gap:4px;}
+        .modal-context-bar{height:4px;background:var(--border-color);border-radius:2px;margin-top:8px;overflow:hidden;}
+        .modal-context-bar-fill{height:100%;background:var(--accent);transition:width 0.3s ease;}
+        .modal-context-bar-fill.warning{background:var(--warning);}
+        .modal-context-bar-fill.danger{background:var(--danger);}
+        .bg-preview{width:100%;height:60px;border-radius:var(--radius-sm);background-size:cover;background-position:center;margin-top:8px;border:1px solid var(--border-color);position:relative;}
+        .bg-preview::after{content:'拖拽图片到此处更换';display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:12px;}
+        .bg-preview[style*="url"]::after{display:none;}
+
+        #importFile,#chatFileInput,#bgImageInput{display:none;}
+        .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:10px 24px;border-radius:20px;font-size:14px;z-index:2000;animation:fadeIn 0.3s ease;pointer-events:none;}
+
+        .drag-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;background:rgba(16,163,127,0.08);pointer-events:none;align-items:center;justify-content:center;font-size:24px;color:var(--accent);}
+        .drag-overlay.active{display:flex;}
+
+        @media(max-width:768px){
+            .main-menu-btn{display:flex;}
+            .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%);box-shadow:none;width:280px;}
+            .sidebar.mobile-visible{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,0.5);}
+            .sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:15;display:none;}
+            .sidebar-overlay.active{display:block;}
+            .message{padding:16px 12px;}
+            .message-actions{margin-left:44px;}
+            .token-stats{font-size:11px;padding:4px 8px;gap:4px;}
+            .chat-header{padding:10px 12px 10px 44px;}
+            .header-action-btn{font-size:10px;padding:4px 8px;}
+            .wechat-bubble{max-width:85%;}
+            .wechat-header{padding:12px 50px;}
+        }
+        @media(max-width:480px){
+            .header-title span:first-child{display:none;}
+            .header-actions{gap:3px;}
+            .header-action-btn{padding:4px 6px;font-size:9px;}
         }
     </style>
 </head>
 <body>
     <div class="app">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <button class="new-chat-btn" id="newChatBtn">+ 新对话</button>
+                <button class="new-chat-btn" id="newChatBtn"><span>+</span> 新对话</button>
             </div>
             <div class="history-list" id="historyList"></div>
             <div class="sidebar-footer">
-                <button class="settings-btn" id="settingsBtn">⚙️ 设置</button>
+                <button class="sidebar-btn" id="styleToggleBtn">🔄 切换微信风格</button>
+                <button class="sidebar-btn" id="settingsBtn">⚙️ API 设置</button>
+                <button class="sidebar-btn" id="shortcutSettingsBtn">⌨️ 快捷键设置</button>
                 <div class="backup-buttons">
                     <button class="backup-btn" id="exportBtn">📥 导出</button>
                     <button class="backup-btn" id="importBtn">📤 导入</button>
@@ -585,786 +270,858 @@
             </div>
         </aside>
 
-        <main class="main">
-            <header class="chat-header">
-                <button class="menu-btn" id="menuBtn">☰</button>
-                <div class="header-title">
-                    <span>DeepSeek</span>
-                    <span class="model-tag">V3</span>
+        <main class="main" id="mainEl">
+            <button class="main-menu-btn" id="menuBtn" aria-label="打开菜单">☰</button>
+            <div class="drag-overlay" id="dragOverlay">📂 释放文件以上传</div>
+
+            <header class="chat-header" id="dsHeader">
+                <div class="header-left">
+                    <div class="header-title"><span>DeepSeek</span><span class="model-tag">V3</span></div>
                 </div>
-                <div class="token-stats" id="tokenStats">
-                    <span class="token-used">📊 0</span>
-                    <span class="token-remaining">💎 免费</span>
-                    <button class="token-reset" id="resetTokenBtn">↺</button>
+                <div class="header-right">
+                    <div class="header-actions">
+                        <button class="header-action-btn" id="reactivatePersonaBtn" title="激活人设">🎭 激活人设</button>
+                        <button class="header-action-btn" id="summarizeBtn" title="压缩记忆">📝 压缩记忆</button>
+                    </div>
+                    <div class="token-stats" id="tokenStats">
+                        <span class="token-used">📊 0</span>
+                        <span class="token-remaining">💎 免费</span>
+                        <button class="token-reset" id="resetTokenBtn" title="重置统计">↺</button>
+                    </div>
                 </div>
             </header>
 
+            <header class="wechat-header" id="wechatHeader">
+                <span class="chat-note" id="chatNoteDisplay" title="点击编辑备注">未命名对话</span>
+            </header>
+
+            <div class="context-bar" id="contextBar"><div class="context-bar-fill" id="contextBarFill"></div></div>
+
             <div class="messages-container" id="messagesContainer">
-                <div class="welcome-message">
-                    <h1>你好，我是 DeepSeek</h1>
-                    <p>有什么我可以帮你的吗？</p>
-                </div>
+                <div class="welcome-message"><h1>你好，我是 DeepSeek</h1><p>有什么我可以帮你的吗？</p></div>
             </div>
 
-            <div class="input-area">
-                <div class="input-box">
-                    <textarea id="userInput" placeholder="发送消息" rows="1"></textarea>
-                    <button id="sendBtn" class="send-icon">➤</button>
+            <div class="input-area" id="inputArea">
+                <div class="file-preview-area" id="filePreviewArea"></div>
+                <div class="input-wrapper" id="inputWrapper">
+                    <div class="input-box" id="inputBox">
+                        <button class="attach-btn" id="attachBtn" title="上传文件">＋</button>
+                        <textarea id="userInput" placeholder="发送消息" rows="1"></textarea>
+                        <button id="sendBtn" class="send-btn" aria-label="发送消息">↑</button>
+                    </div>
                 </div>
                 <p class="disclaimer">内容由AI生成，仅供参考</p>
             </div>
         </main>
 
-        <div id="settingsModal" class="modal">
+        <div class="context-menu" id="contextMenu">
+            <div class="context-menu-item" data-action="copy">⧉ 复制</div>
+            <div class="context-menu-item" data-action="edit">✎ 编辑</div>
+        </div>
+
+        <div id="settingsModal" class="modal-overlay">
             <div class="modal-card">
-                <div class="modal-header">
-                    <h3>API 设置</h3>
-                    <button class="modal-close" id="modalCloseBtn">&times;</button>
-                </div>
+                <div class="modal-header"><h3>API 设置</h3><button class="modal-close" id="modalCloseBtn">&times;</button></div>
                 <div class="modal-body">
-                    <label>API Key</label>
-                    <input type="password" id="apiKeyInput" placeholder="sk-...">
-                    <label>API 地址</label>
-                    <input type="text" id="apiUrlInput" value="https://api.deepseek.com/v1/chat/completions">
-                    <button class="save-btn" id="saveApiBtn">保存</button>
-                    <p class="hint">💡 API Key 只保存在你的浏览器中</p>
+                    <label for="apiKeyInput">API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
+                    <label for="apiUrlInput">API 地址</label>
+                    <input type="text" id="apiUrlInput" placeholder="https://api.deepseek.com/v1/chat/completions">
+                    <button class="btn-primary" id="saveApiBtn" style="width:100%;">保存设置</button>
+                    <p class="hint">💡 API Key 仅保存在浏览器本地</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="shortcutModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header"><h3>快捷键设置</h3><button class="modal-close" id="shortcutCloseBtn">&times;</button></div>
+                <div class="modal-body">
+                    <label>发送消息快捷键</label>
+                    <div class="shortcut-row">
+                        <select id="sendShortcutSelect">
+                            <option value="shift+enter">Shift + Enter</option>
+                            <option value="ctrl+enter">Ctrl + Enter</option>
+                            <option value="enter">Enter</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" id="saveShortcutBtn" style="width:100%;margin-top:16px;">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="personaModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header"><h3>🎭 AI 设置</h3><button class="modal-close" id="personaCloseBtn">&times;</button></div>
+                <div class="modal-body">
+                    <label for="personaModalInput">角色人设</label>
+                    <textarea id="personaModalInput" placeholder="设定 AI 的角色身份..." rows="3"></textarea>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="personaConfirmBtn">确认人设</button>
+                        <button class="btn-warning" id="personaActivateBtn">激活人设</button>
+                        <button class="btn-secondary" id="personaCancelBtn">取消</button>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn-secondary" id="personaSummarizeBtn">📝 压缩记忆</button>
+                    </div>
+                    <div class="modal-stats">
+                        <span class="stat-item" id="modalTokenUsed">📊 0</span>
+                        <span class="stat-item" id="modalTokenCost">💰 免费</span>
+                    </div>
+                    <div class="modal-context-bar"><div class="modal-context-bar-fill" id="modalContextBarFill"></div></div>
+                    <label>聊天背景</label>
+                    <button class="btn-secondary" id="changeBgBtn" style="width:100%;">选择背景图片</button>
+                    <button class="btn-secondary" id="clearBgBtn" style="width:100%;margin-top:6px;">清除背景</button>
+                    <div class="bg-preview" id="bgPreview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="editConfirmModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header"><h3>编辑消息</h3><button class="modal-close" id="editConfirmCloseBtn">&times;</button></div>
+                <div class="modal-body">
+                    <p style="color:var(--text-primary);margin-bottom:16px;">是否重置以下所有消息？</p>
+                    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">"是"：以此消息为起点重新开始。<br>"否"：仅修改此消息。</p>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="editConfirmYes">是</button>
+                        <button class="btn-secondary" id="editConfirmNo">否</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="regenerateModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header"><h3>重新生成</h3><button class="modal-close" id="regenerateCloseBtn">&times;</button></div>
+                <div class="modal-body">
+                    <label for="regenerateInput">改进需求（可选）</label>
+                    <textarea id="regenerateInput" placeholder="描述改进需求..."></textarea>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="regenerateConfirm">重新生成</button>
+                        <button class="btn-secondary" id="regenerateCancel">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="summarizeModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header"><h3>压缩记忆</h3><button class="modal-close" id="summarizeCloseBtn">&times;</button></div>
+                <div class="modal-body">
+                    <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">AI 将总结历史对话，界面保留旧消息。</p>
+                    <label for="summarizeExtraInput">额外补充（可选）</label>
+                    <textarea id="summarizeExtraInput" placeholder="添加新的剧情走向..." rows="2"></textarea>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="summarizeConfirm">开始压缩</button>
+                        <button class="btn-secondary" id="summarizeCancel">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="summaryEditModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header"><h3>📝 确认摘要</h3><button class="modal-close" id="summaryEditCloseBtn">&times;</button></div>
+                <div class="modal-body">
+                    <p style="color:var(--text-secondary);font-size:13px;margin-bottom:8px;">AI 已生成摘要，你可以修改后确认：</p>
+                    <textarea id="summaryEditInput" rows="8"></textarea>
+                    <label for="summaryEditExtra">额外补充（可选）</label>
+                    <textarea id="summaryEditExtra" placeholder="添加新的剧情走向..." rows="2"></textarea>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="summaryEditConfirm">确认并继续</button>
+                        <button class="btn-secondary" id="summaryEditCancel">取消</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 隐藏的文件上传 input -->
     <input type="file" id="importFile" accept=".json">
+    <input type="file" id="chatFileInput" accept=".txt,.js,.ts,.jsx,.tsx,.py,.java,.c,.cpp,.h,.hpp,.rs,.go,.rb,.php,.swift,.kt,.scala,.sh,.bash,.zsh,.yaml,.yml,.json,.xml,.html,.css,.scss,.less,.md,.rst,.sql,.r,.m,.lua,.pl,.pm,.dart,.cs,.vb,.fs,.fsx,.cfg,.ini,.toml,.env,.gitignore,.dockerignore,text/plain,text/x-python,text/x-c,text/x-c++,text/javascript,text/html,text/css,application/json,application/xml" multiple>
+    <input type="file" id="bgImageInput" accept="image/*">
 
-    <script>
-        // 存储键名
-        const STORAGE_KEYS = {
-            API_KEY: 'deepseek_api_key',
-            API_URL: 'deepseek_api_url',
-            ALL_CHATS: 'deepseek_all_chats',
-            CURRENT_CHAT_ID: 'deepseek_current_chat_id',
-            TOTAL_TOKENS: 'deepseek_total_tokens'
-        };
+<script>
+(function() {
+    'use strict';
 
-        // DeepSeek 价格（每百万tokens）
-        const PRICE_INPUT_PER_M = 0.14;
-        const PRICE_OUTPUT_PER_M = 0.28;
+    const CONFIG = {
+        STORAGE_KEYS: {
+            API_KEY: 'deepseek_api_key_v9',
+            API_URL: 'deepseek_api_url_v9',
+            ALL_CHATS: 'deepseek_all_chats_v9',
+            CURRENT_CHAT_ID: 'deepseek_current_chat_id_v9',
+            TOKEN_STATS: 'deepseek_token_stats_v9',
+            SEND_SHORTCUT: 'deepseek_send_shortcut_v9',
+            UI_STYLE: 'deepseek_ui_style_v9',
+            WECHAT_BG: 'deepseek_wechat_bg_v9',
+            DS_BG: 'deepseek_ds_bg_v9'
+        },
+        DEFAULT_API_URL: 'https://api.deepseek.com/v1/chat/completions',
+        MODEL: 'deepseek-chat',
+        MAX_TITLE_LENGTH: 30,
+        PRICE_INPUT_PER_M: 0.14,
+        PRICE_OUTPUT_PER_M: 0.28,
+        MAX_MESSAGES_PER_CHAT: 500,
+        MAX_FILE_SIZE: 10 * 1024 * 1024,
+        CONTEXT_WINDOW: 128000,
+        DEBOUNCE_SAVE_MS: 500
+    };
 
-        // 数据结构
-        let allChats = {};
-        let currentChatId = null;
-        let currentMessages = [];
-        let isRegenerating = false;
-        
-        // Token 统计
-        let totalPromptTokens = 0;
-        let totalCompletionTokens = 0;
+    const state = {
+        allChats: {},
+        currentChatId: null,
+        currentMessages: [],
+        tokenStats: { prompt: 0, completion: 0 },
+        isLoading: false,
+        pendingEdit: null,
+        pendingRegenerate: null,
+        pendingFiles: [],
+        activeContextMessages: [],
+        contextEpoch: 0,
+        sendShortcut: 'shift+enter',
+        pendingSummary: null,
+        uiStyle: 'ds',
+        wechatBg: '',
+        dsBg: '',
+        contextMenuTarget: null
+    };
 
-        // DOM 元素
-        let messagesContainer, userInput, sendBtn, apiKeyInput, apiUrlInput;
-        let settingsModal, saveApiBtn, modalCloseBtn, newChatBtn, settingsBtn;
-        let menuBtn, sidebar, overlay, historyList;
-        let tokenUsedSpan, tokenRemainingSpan, resetTokenBtn;
-        let exportBtn, importBtn, importFile;
+    const DOM = {};
 
-        document.addEventListener('DOMContentLoaded', () => {
-            messagesContainer = document.getElementById('messagesContainer');
-            userInput = document.getElementById('userInput');
-            sendBtn = document.getElementById('sendBtn');
-            settingsModal = document.getElementById('settingsModal');
-            saveApiBtn = document.getElementById('saveApiBtn');
-            modalCloseBtn = document.getElementById('modalCloseBtn');
-            newChatBtn = document.getElementById('newChatBtn');
-            settingsBtn = document.getElementById('settingsBtn');
-            menuBtn = document.getElementById('menuBtn');
-            sidebar = document.getElementById('sidebar');
-            historyList = document.getElementById('historyList');
-            apiKeyInput = document.getElementById('apiKeyInput');
-            apiUrlInput = document.getElementById('apiUrlInput');
-            tokenUsedSpan = document.querySelector('.token-used');
-            tokenRemainingSpan = document.querySelector('.token-remaining');
-            resetTokenBtn = document.getElementById('resetTokenBtn');
-            exportBtn = document.getElementById('exportBtn');
-            importBtn = document.getElementById('importBtn');
-            importFile = document.getElementById('importFile');
+    function cacheDomElements() {
+        const ids = ['messagesContainer','userInput','sendBtn','settingsModal','saveApiBtn','modalCloseBtn',
+            'newChatBtn','settingsBtn','menuBtn','sidebar','sidebarOverlay','historyList',
+            'apiKeyInput','apiUrlInput','resetTokenBtn','exportBtn','importBtn','importFile',
+            'attachBtn','chatFileInput','filePreviewArea','inputWrapper','contextBarFill',
+            'reactivatePersonaBtn','summarizeBtn','editConfirmModal','editConfirmYes','editConfirmNo',
+            'editConfirmCloseBtn','regenerateModal','regenerateInput','regenerateConfirm','regenerateCancel',
+            'regenerateCloseBtn','summarizeModal','summarizeExtraInput','summarizeConfirm','summarizeCancel',
+            'summarizeCloseBtn','personaModal','personaModalInput','personaConfirmBtn','personaActivateBtn',
+            'personaCancelBtn','personaCloseBtn','shortcutModal','sendShortcutSelect','saveShortcutBtn',
+            'shortcutCloseBtn','shortcutSettingsBtn','summaryEditModal','summaryEditInput','summaryEditExtra',
+            'summaryEditConfirm','summaryEditCancel','summaryEditCloseBtn','styleToggleBtn','contextMenu',
+            'dsHeader','wechatHeader','chatNoteDisplay','inputArea','inputBox','contextBar',
+            'personaSummarizeBtn','changeBgBtn','clearBgBtn','bgPreview','bgImageInput',
+            'modalTokenUsed','modalTokenCost','modalContextBarFill','mainEl','dragOverlay'];
+        ids.forEach(id => { DOM[id] = document.getElementById(id); });
+        DOM.tokenUsed = document.querySelector('.token-used');
+        DOM.tokenRemaining = document.querySelector('.token-remaining');
+    }
 
-            if (window.innerWidth <= 768) {
-                overlay = document.createElement('div');
-                overlay.className = 'overlay';
-                document.body.appendChild(overlay);
-                overlay.addEventListener('click', toggleSidebar);
-            }
+    const utils = {
+        escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; },
+        generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); },
+        debounce(fn, d) { let t; return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), d); }; },
+        showToast(m, d = 2000) { const e = document.querySelector('.toast'); if (e) e.remove(); const n = document.createElement('div'); n.className = 'toast'; n.textContent = m; document.body.appendChild(n); setTimeout(() => n.remove(), d); },
+        async copyToClipboard(t) { try { await navigator.clipboard.writeText(t); return true; } catch { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); const r = document.execCommand('copy'); document.body.removeChild(a); return r; } },
+        formatFileSize(b) { if (b < 1024) return b + ' B'; if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB'; return (b / (1024 * 1024)).toFixed(1) + ' MB'; },
+        getFileIcon(n) { const e = n.split('.').pop().toLowerCase(); const m = { js:'📜',ts:'📜',py:'🐍',java:'☕',c:'⚙️',cpp:'⚙️',rs:'🦀',go:'🔵',rb:'💎',php:'🐘',html:'🌐',css:'🎨',json:'📋',xml:'📋',yaml:'📋',md:'📝',txt:'📄',sql:'🗄️',sh:'💻' }; return m[e] || '📎'; },
+        estimateTokens(t) { return Math.ceil((t || '').length * 0.4); }
+    };
 
-            // 加载API设置
-            const savedApiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-            const savedApiUrl = localStorage.getItem(STORAGE_KEYS.API_URL);
-            if (savedApiKey) apiKeyInput.value = savedApiKey;
-            if (savedApiUrl) apiUrlInput.value = savedApiUrl;
+    const storage = {
+        get(k, d = null) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+        set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { if (e.name === 'QuotaExceededError') utils.showToast('存储空间不足'); } }
+    };
 
-            // 加载 Token 统计
-            loadTokenStats();
-            updateTokenDisplay();
-
-            // 加载所有对话
-            loadAllChats();
-            
-            // 加载当前对话ID
-            const savedChatId = localStorage.getItem(STORAGE_KEYS.CURRENT_CHAT_ID);
-            if (savedChatId && allChats[savedChatId]) {
-                switchToChat(savedChatId);
-            } else if (Object.keys(allChats).length > 0) {
-                const firstChatId = Object.keys(allChats)[0];
-                switchToChat(firstChatId);
+    const styleManager = {
+        load() {
+            state.uiStyle = storage.get(CONFIG.STORAGE_KEYS.UI_STYLE, 'ds');
+            state.wechatBg = storage.get(CONFIG.STORAGE_KEYS.WECHAT_BG, '');
+            state.dsBg = storage.get(CONFIG.STORAGE_KEYS.DS_BG, '');
+            this.apply();
+        },
+        toggle() {
+            state.uiStyle = state.uiStyle === 'ds' ? 'wechat' : 'ds';
+            storage.set(CONFIG.STORAGE_KEYS.UI_STYLE, state.uiStyle);
+            this.apply();
+            ui.renderMessages();
+            ui.scrollToBottom();
+        },
+        apply() {
+            const isWechat = state.uiStyle === 'wechat';
+            DOM.dsHeader.style.display = isWechat ? 'none' : 'flex';
+            DOM.wechatHeader.style.display = isWechat ? 'block' : 'none';
+            DOM.contextBar.style.display = isWechat ? 'none' : 'block';
+            DOM.inputArea.classList.toggle('wechat-input-area', isWechat);
+            DOM.inputBox.classList.toggle('wechat-input-box', isWechat);
+            DOM.styleToggleBtn.textContent = isWechat ? '🔄 切换DeepSeek风格' : '🔄 切换微信风格';
+            DOM.styleToggleBtn.classList.toggle('active-style', isWechat);
+            DOM.messagesContainer.classList.toggle('wechat-bg', isWechat);
+            if (isWechat && state.wechatBg) {
+                DOM.messagesContainer.style.backgroundImage = `url(${state.wechatBg})`;
+            } else if (!isWechat && state.dsBg) {
+                DOM.messagesContainer.style.backgroundImage = `url(${state.dsBg})`;
             } else {
-                createNewChat();
+                DOM.messagesContainer.style.backgroundImage = '';
             }
-
-            renderHistoryList();
-
-            // 事件绑定
-            sendBtn.addEventListener('click', sendMessage);
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
-
-            settingsBtn.addEventListener('click', () => {
-                settingsModal.style.display = 'flex';
-            });
-
-            saveApiBtn.addEventListener('click', () => {
-                const apiKey = apiKeyInput.value.trim();
-                const apiUrl = apiUrlInput.value.trim();
-                if (apiKey) localStorage.setItem(STORAGE_KEYS.API_KEY, apiKey);
-                if (apiUrl) localStorage.setItem(STORAGE_KEYS.API_URL, apiUrl);
-                settingsModal.style.display = 'none';
-                alert('API 设置已保存！');
-            });
-
-            modalCloseBtn.onclick = () => settingsModal.style.display = 'none';
-            window.onclick = (e) => {
-                if (e.target === settingsModal) settingsModal.style.display = 'none';
-            };
-
-            newChatBtn.addEventListener('click', () => {
-                createNewChat();
-                if (window.innerWidth <= 768) toggleSidebar();
-            });
-
-            // 重置 Token
-            resetTokenBtn.addEventListener('click', () => {
-                if (confirm('确定要重置 Token 统计吗？')) {
-                    totalPromptTokens = 0;
-                    totalCompletionTokens = 0;
-                    saveTokenStats();
-                    updateTokenDisplay();
-                }
-            });
-
-            // 导出数据
-            exportBtn.addEventListener('click', exportData);
-
-            // 导入数据
-            importBtn.addEventListener('click', () => {
-                importFile.click();
-            });
-            importFile.addEventListener('change', importData);
-
-            userInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-            });
-        });
-
-        // 导出所有数据
-        function exportData() {
-            const exportData = {
-                version: '1.0',
-                exportTime: new Date().toISOString(),
-                allChats: allChats,
-                currentChatId: currentChatId,
-                totalPromptTokens: totalPromptTokens,
-                totalCompletionTokens: totalCompletionTokens
-            };
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `deepseek_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('导出成功！文件已保存到下载文件夹');
-        }
-
-        // 导入数据
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    
-                    // 验证数据格式
-                    if (imported.allChats && typeof imported.allChats === 'object') {
-                        // 合并导入的对话（不覆盖已有的同名对话，用导入的覆盖）
-                        allChats = { ...imported.allChats };
-                        
-                        // 恢复 Token 统计
-                        if (imported.totalPromptTokens !== undefined) {
-                            totalPromptTokens = imported.totalPromptTokens;
-                            totalCompletionTokens = imported.totalCompletionTokens || 0;
-                            saveTokenStats();
-                            updateTokenDisplay();
-                        }
-                        
-                        // 保存到 localStorage
-                        saveAllChats();
-                        
-                        // 恢复当前对话
-                        if (imported.currentChatId && allChats[imported.currentChatId]) {
-                            switchToChat(imported.currentChatId);
-                        } else {
-                            const firstChatId = Object.keys(allChats)[0];
-                            if (firstChatId) {
-                                switchToChat(firstChatId);
-                            } else {
-                                createNewChat();
-                            }
-                        }
-                        
-                        renderHistoryList();
-                        alert('导入成功！');
-                    } else {
-                        alert('文件格式错误，无法导入');
-                    }
-                } catch (err) {
-                    alert('文件解析失败：' + err.message);
-                }
-            };
-            reader.readAsText(file);
-            
-            // 清空 input，以便再次导入同一个文件
-            importFile.value = '';
-        }
-
-        function updateTokenDisplay() {
-            const totalTokens = totalPromptTokens + totalCompletionTokens;
-            const cost = (totalPromptTokens / 1000000 * PRICE_INPUT_PER_M + 
-                         totalCompletionTokens / 1000000 * PRICE_OUTPUT_PER_M).toFixed(4);
-            
-            tokenUsedSpan.innerHTML = `📊 ${totalTokens.toLocaleString()}`;
-            
-            if (totalTokens > 0) {
-                tokenRemainingSpan.innerHTML = `💰 ¥${cost}`;
+            DOM.userInput.placeholder = shortcutManager.getPlaceholder();
+            this.updateNoteDisplay();
+            this.updateBgPreview();
+        },
+        updateNoteDisplay() {
+            if (state.uiStyle !== 'wechat') return;
+            const display = document.getElementById('chatNoteDisplay');
+            if (!display) return;
+            if (state.currentChatId && state.allChats[state.currentChatId]) {
+                const note = state.allChats[state.currentChatId].note || state.allChats[state.currentChatId].title || '未命名对话';
+                display.textContent = note;
+            }
+        },
+        setBackground(imageDataUrl) {
+            if (state.uiStyle === 'wechat') {
+                state.wechatBg = imageDataUrl;
+                storage.set(CONFIG.STORAGE_KEYS.WECHAT_BG, imageDataUrl);
             } else {
-                tokenRemainingSpan.innerHTML = `💎 免费`;
+                state.dsBg = imageDataUrl;
+                storage.set(CONFIG.STORAGE_KEYS.DS_BG, imageDataUrl);
             }
-        }
-
-        function saveTokenStats() {
-            localStorage.setItem(STORAGE_KEYS.TOTAL_TOKENS, JSON.stringify({
-                prompt: totalPromptTokens,
-                completion: totalCompletionTokens
-            }));
-        }
-
-        function loadTokenStats() {
-            const saved = localStorage.getItem(STORAGE_KEYS.TOTAL_TOKENS);
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    totalPromptTokens = data.prompt || 0;
-                    totalCompletionTokens = data.completion || 0;
-                } catch(e) {}
-            }
-        }
-
-        function addTokens(promptTokens, completionTokens) {
-            totalPromptTokens += promptTokens;
-            totalCompletionTokens += completionTokens;
-            saveTokenStats();
-            updateTokenDisplay();
-        }
-
-        function toggleSidebar() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('mobile-visible');
-                if (overlay) overlay.classList.toggle('active');
+            this.apply();
+        },
+        clearBackground() {
+            if (state.uiStyle === 'wechat') {
+                state.wechatBg = '';
+                storage.set(CONFIG.STORAGE_KEYS.WECHAT_BG, '');
             } else {
-                sidebar.classList.toggle('hidden');
+                state.dsBg = '';
+                storage.set(CONFIG.STORAGE_KEYS.DS_BG, '');
             }
+            this.apply();
+        },
+        updateBgPreview() {
+            if (!DOM.bgPreview) return;
+            const bg = state.uiStyle === 'wechat' ? state.wechatBg : state.dsBg;
+            DOM.bgPreview.style.display = 'block';
+            DOM.bgPreview.style.backgroundImage = bg ? `url(${bg})` : '';
         }
+    };
 
-        function createNewChat() {
-            const chatId = Date.now().toString();
-            const now = new Date().toISOString();
-            allChats[chatId] = {
-                id: chatId,
-                title: '新对话',
-                messages: [],
-                createdAt: now,
-                updatedAt: now
-            };
-            saveAllChats();
-            switchToChat(chatId);
-            renderHistoryList();
-        }
+    const shortcutManager = {
+        load() { state.sendShortcut = storage.get(CONFIG.STORAGE_KEYS.SEND_SHORTCUT, 'shift+enter'); if (DOM.sendShortcutSelect) DOM.sendShortcutSelect.value = state.sendShortcut; },
+        save(v) { state.sendShortcut = v; storage.set(CONFIG.STORAGE_KEYS.SEND_SHORTCUT, v); },
+        getModifier() { const m = { 'shift+enter': { shiftKey: true, ctrlKey: false }, 'ctrl+enter': { shiftKey: false, ctrlKey: true }, 'enter': { shiftKey: false, ctrlKey: false } }; return m[state.sendShortcut] || m['shift+enter']; },
+        shouldSend(e) { if (e.key !== 'Enter') return false; const mod = this.getModifier(); if (mod.shiftKey && !e.shiftKey) return false; if (mod.ctrlKey && !e.ctrlKey && !e.metaKey) return false; if (!mod.shiftKey && !mod.ctrlKey && (e.shiftKey || e.ctrlKey || e.metaKey)) return false; return true; },
+        getPlaceholder() { const m = { 'shift+enter': 'Shift+Enter 发送', 'ctrl+enter': 'Ctrl+Enter 发送', 'enter': 'Enter 发送，Shift+Enter 换行' }; return m[state.sendShortcut] || '发送消息'; }
+    };
 
-        function switchToChat(chatId) {
-            if (!allChats[chatId]) return;
-            
-            currentChatId = chatId;
-            currentMessages = [...allChats[chatId].messages];
-            localStorage.setItem(STORAGE_KEYS.CURRENT_CHAT_ID, chatId);
-            
-            if (currentMessages.length === 0) {
-                messagesContainer.innerHTML = `
-                    <div class="welcome-message">
-                        <h1>你好，我是 DeepSeek</h1>
-                        <p>有什么我可以帮你的吗？</p>
-                    </div>
-                `;
-            } else {
-                messagesContainer.innerHTML = '';
-                for (let i = 0; i < currentMessages.length; i++) {
-                    const msg = currentMessages[i];
-                    addMessageToUI(msg.content, msg.role, i);
-                }
-            }
-            
-            renderHistoryList();
-        }
+    const personaManager = {
+        getPersona() { if (!state.currentChatId || !state.allChats[state.currentChatId]) return ''; return state.allChats[state.currentChatId].persona || ''; },
+        setPersona(text) { if (!state.currentChatId) return; if (!state.allChats[state.currentChatId]) return; state.allChats[state.currentChatId].persona = text.trim(); chatManager.saveAll(); this.updateAvatarStyle(); },
+        getSystemMessage() { const p = this.getPersona(); return p ? { role: 'system', content: p } : null; },
+        updateAvatarStyle() { const p = this.getPersona(); document.querySelectorAll('.message.assistant .avatar, .message.wechat-msg.assistant .wechat-avatar').forEach(a => { if (p) a.classList.add('has-persona'); else a.classList.remove('has-persona'); }); }
+    };
 
-        function deleteChat(chatId, event) {
-            event.stopPropagation();
-            if (Object.keys(allChats).length === 1) {
-                createNewChat();
-            }
-            delete allChats[chatId];
-            saveAllChats();
-            
-            if (currentChatId === chatId) {
-                const remainingIds = Object.keys(allChats);
-                if (remainingIds.length > 0) {
-                    switchToChat(remainingIds[0]);
-                } else {
-                    createNewChat();
-                }
-            }
-            renderHistoryList();
-        }
-
-        function renderHistoryList() {
-            if (!historyList) return;
-            
-            const chats = Object.values(allChats).sort((a, b) => 
-                new Date(b.updatedAt) - new Date(a.updatedAt)
-            );
-            
+    const contextManager = {
+        buildApiMessages() {
+            const messages = [];
+            const sysMsg = personaManager.getSystemMessage();
+            if (sysMsg) messages.push(sysMsg);
             const now = new Date();
-            const todayStr = now.toDateString();
-            const yesterdayStr = new Date(now.setDate(now.getDate() - 1)).toDateString();
-            now.setDate(now.getDate() + 1);
-            
-            const today = [];
-            const yesterday = [];
-            const older = [];
-            
-            chats.forEach(chat => {
-                const chatDate = new Date(chat.updatedAt).toDateString();
-                if (chatDate === todayStr) {
-                    today.push(chat);
-                } else if (chatDate === yesterdayStr) {
-                    yesterday.push(chat);
+            const timeStr = now.toLocaleString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            messages.push({ role: 'system', content: `【当前时间：${timeStr}】` });
+            messages.push(...state.activeContextMessages);
+            return messages;
+        },
+        syncFromDisplayMessages() {
+            state.activeContextMessages = state.currentMessages.filter(m => m.role !== 'divider').map(m => ({ role: m.role, content: getMessageContent(m) }));
+        },
+        estimateTotalTokens() { let t = 0; this.buildApiMessages().forEach(m => t += utils.estimateTokens(m.content)); return t; },
+        updateContextBar() {
+            const used = this.estimateTotalTokens(), pct = Math.min((used / CONFIG.CONTEXT_WINDOW) * 100, 100);
+            [DOM.contextBarFill, DOM.modalContextBarFill].forEach(bar => { if (!bar) return; bar.style.width = pct + '%'; bar.classList.remove('warning', 'danger'); if (pct > 90) bar.classList.add('danger'); else if (pct > 70) bar.classList.add('warning'); });
+        }
+    };
+
+    const tokenManager = {
+        load() { const s = storage.get(CONFIG.STORAGE_KEYS.TOKEN_STATS); if (s) state.tokenStats = { prompt: s.prompt || 0, completion: s.completion || 0 }; },
+        save() { storage.set(CONFIG.STORAGE_KEYS.TOKEN_STATS, state.tokenStats); },
+        add(p, c) { state.tokenStats.prompt += p; state.tokenStats.completion += c; this.save(); this.updateDisplay(); },
+        reset() { state.tokenStats = { prompt: 0, completion: 0 }; this.save(); this.updateDisplay(); },
+        getCost() { return (state.tokenStats.prompt / 1e6) * CONFIG.PRICE_INPUT_PER_M + (state.tokenStats.completion / 1e6) * CONFIG.PRICE_OUTPUT_PER_M; },
+        getTotal() { return state.tokenStats.prompt + state.tokenStats.completion; },
+        updateDisplay() {
+            const t = this.getTotal();
+            if (DOM.tokenUsed) DOM.tokenUsed.innerHTML = `📊 ${t.toLocaleString()}`;
+            if (DOM.tokenRemaining) DOM.tokenRemaining.innerHTML = t > 0 ? `💰 ¥${this.getCost().toFixed(4)}` : '💎 免费';
+            if (DOM.modalTokenUsed) DOM.modalTokenUsed.innerHTML = `📊 ${t.toLocaleString()}`;
+            if (DOM.modalTokenCost) DOM.modalTokenCost.innerHTML = t > 0 ? `💰 ¥${this.getCost().toFixed(4)}` : '💎 免费';
+        }
+    };
+
+    const fileManager = {
+        async addFiles(files) {
+            const nf = [];
+            for (const f of files) { if (f.size > CONFIG.MAX_FILE_SIZE) { utils.showToast(`${f.name} 超过10MB`); continue; } if (f.size === 0) continue; try { nf.push({ name: f.name, size: f.size, content: await this.readFile(f), type: f.type || 'text/plain' }); } catch { utils.showToast(`读取 ${f.name} 失败`); } }
+            if (nf.length > 0) { state.pendingFiles.push(...nf); ui.renderFilePreview(); }
+        },
+        readFile(f) { return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = e => resolve(e.target.result); r.onerror = () => reject(); r.readAsText(f); }); },
+        remove(i) { state.pendingFiles.splice(i, 1); ui.renderFilePreview(); },
+        clear() { state.pendingFiles = []; ui.renderFilePreview(); },
+        buildContext() { if (!state.pendingFiles.length) return ''; let c = '\n\n--- 上传的文件 ---\n'; state.pendingFiles.forEach((f, i) => { c += `\n[${f.name}]\n\`\`\`\n${f.content}\n\`\`\`\n`; }); c += '--- 结束 ---'; return c; }
+    };
+
+    function createMessage(role, content) { return { role, content, versions: [content], currentVersionIndex: 0, branchParentId: null, files: [], epoch: state.contextEpoch, _timestamp: Date.now() }; }
+    function getMessageContent(msg) { return msg.versions[msg.currentVersionIndex]; }
+    function addMessageVersion(msg, c) { if (msg.currentVersionIndex < msg.versions.length - 1) msg.versions = msg.versions.slice(0, msg.currentVersionIndex + 1); msg.versions.push(c); msg.currentVersionIndex = msg.versions.length - 1; }
+    function switchMessageVersion(msg, d) { const n = msg.currentVersionIndex + d; if (n >= 0 && n < msg.versions.length) { msg.currentVersionIndex = n; return true; } return false; }
+
+    const chatManager = {
+        loadAll() { state.allChats = storage.get(CONFIG.STORAGE_KEYS.ALL_CHATS, {}); },
+        saveAll: utils.debounce(function() { storage.set(CONFIG.STORAGE_KEYS.ALL_CHATS, state.allChats); }, CONFIG.DEBOUNCE_SAVE_MS),
+        saveCurrent() {
+            if (!state.currentChatId || !state.currentMessages.length) return;
+            const chat = state.allChats[state.currentChatId]; if (!chat) return;
+            if (chat.title === '新对话' || !chat.title) { const fu = state.currentMessages.find(m => m.role === 'user'); if (fu) { const c = getMessageContent(fu).trim(); chat.title = c.length > CONFIG.MAX_TITLE_LENGTH ? c.slice(0, CONFIG.MAX_TITLE_LENGTH) + '...' : c; } }
+            chat.messages = state.currentMessages.map(m => ({ ...m })); chat.updatedAt = new Date().toISOString(); this.saveAll(); styleManager.updateNoteDisplay();
+        },
+        create() {
+            const id = utils.generateId();
+            state.allChats[id] = { id, title: '新对话', note: '', messages: [], persona: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+            state.contextEpoch = 0; state.activeContextMessages = []; this.saveAll(); this.switchTo(id); return id;
+        },
+        switchTo(id) {
+            const chat = state.allChats[id]; if (!chat) return;
+            if (state.currentChatId) this.saveCurrent();
+            state.currentChatId = id;
+            state.currentMessages = (chat.messages || []).map(m => ({ ...m, epoch: m.epoch || 0, _timestamp: m._timestamp || 0 }));
+            state.contextEpoch = state.currentMessages.length > 0 ? Math.max(...state.currentMessages.map(m => m.epoch || 0)) : 0;
+            contextManager.syncFromDisplayMessages();
+            storage.set(CONFIG.STORAGE_KEYS.CURRENT_CHAT_ID, id);
+            ui.renderMessages(); ui.renderHistory(); contextManager.updateContextBar();
+            personaManager.updateAvatarStyle(); styleManager.updateNoteDisplay();
+            DOM.userInput.placeholder = shortcutManager.getPlaceholder(); ui.scrollToBottom();
+        },
+        delete(id) { if (Object.keys(state.allChats).length <= 1) this.create(); delete state.allChats[id]; this.saveAll(); if (state.currentChatId === id) { const r = Object.keys(state.allChats); r.length > 0 ? this.switchTo(r[0]) : this.create(); } ui.renderHistory(); },
+        updateNote(note) { if (!state.currentChatId || !state.allChats[state.currentChatId]) return; state.allChats[state.currentChatId].note = note.trim(); this.saveAll(); styleManager.updateNoteDisplay(); }
+    };
+
+    const api = {
+        getConfig() { return { apiKey: storage.get(CONFIG.STORAGE_KEYS.API_KEY, ''), apiUrl: storage.get(CONFIG.STORAGE_KEYS.API_URL, CONFIG.DEFAULT_API_URL) }; },
+        async callDeepSeek(messages) {
+            const { apiKey, apiUrl } = this.getConfig(); if (!apiKey) throw new Error('请先配置 API Key');
+            const ctrl = new AbortController(); const tid = setTimeout(() => ctrl.abort(), 120000);
+            try {
+                const resp = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify({ model: CONFIG.MODEL, messages, stream: false, temperature: 0.7, max_tokens: 4096 }), signal: ctrl.signal });
+                clearTimeout(tid);
+                if (!resp.ok) { const ed = await resp.json().catch(() => ({})); const em = ed.error?.message || `请求失败 (${resp.status})`; switch (resp.status) { case 401: throw new Error('API Key 无效'); case 402: throw new Error('余额不足'); case 429: throw new Error('请求频繁'); case 503: throw new Error('服务不可用'); default: throw new Error(em); } }
+                const data = await resp.json(); if (!data.choices?.[0]?.message?.content) throw new Error('返回异常');
+                return { content: data.choices[0].message.content, promptTokens: data.usage?.prompt_tokens || 0, completionTokens: data.usage?.completion_tokens || 0 };
+            } catch (e) { clearTimeout(tid); if (e.name === 'AbortError') throw new Error('请求超时'); throw e; }
+        }
+    };
+
+    function closeAllModals() {
+        [DOM.settingsModal, DOM.shortcutModal, DOM.personaModal, DOM.editConfirmModal,
+         DOM.regenerateModal, DOM.summarizeModal, DOM.summaryEditModal].forEach(m => { if (m) m.classList.remove('active'); });
+        DOM.contextMenu.classList.remove('active');
+        state.pendingEdit = null;
+        state.pendingRegenerate = null;
+        state.pendingSummary = null;
+    }
+
+    const ui = {
+        renderFilePreview() {
+            if (!DOM.filePreviewArea) return;
+            if (!state.pendingFiles.length) { DOM.filePreviewArea.innerHTML = ''; return; }
+            DOM.filePreviewArea.innerHTML = state.pendingFiles.map((f, i) => `<div class="file-preview-item"><span>${utils.getFileIcon(f.name)}</span><span class="fp-name">${utils.escapeHtml(f.name)}</span><span class="fp-size">${utils.formatFileSize(f.size)}</span><button class="fp-remove" data-index="${i}">✕</button></div>`).join('');
+            DOM.filePreviewArea.querySelectorAll('.fp-remove').forEach(b => b.addEventListener('click', () => fileManager.remove(parseInt(b.dataset.index))));
+        },
+        renderMessages() {
+            DOM.messagesContainer.innerHTML = '';
+            if (!state.currentMessages.length) { DOM.messagesContainer.innerHTML = '<div class="welcome-message"><h1>你好，我是 DeepSeek</h1><p>有什么我可以帮你的吗？</p></div>'; return; }
+            const isWechat = state.uiStyle === 'wechat';
+            state.currentMessages.forEach((m, i) => {
+                if (m.role === 'divider') {
+                    const d = document.createElement('div'); d.className = 'divider';
+                    d.innerHTML = `<div class="divider-line"></div><span class="divider-text">📝 记忆压缩 · 新对话区间</span><div class="divider-line"></div>`;
+                    DOM.messagesContainer.appendChild(d);
                 } else {
-                    older.push(chat);
+                    isWechat ? this.appendWechatMessage(m, i) : this.appendDSMessage(m, i);
                 }
             });
-            
-            let html = '';
-            
-            if (today.length > 0) {
-                html += '<div class="history-date">今天</div>';
-                today.forEach(chat => {
-                    html += renderHistoryItem(chat);
-                });
+            personaManager.updateAvatarStyle(); this.scrollToBottom();
+        },
+        appendDSMessage(msg, index) {
+            const role = msg.role, content = getMessageContent(msg);
+            const div = document.createElement('div'); div.className = `message ${role}`; div.dataset.index = index;
+            const av = role === 'user' ? '👤' : '✨';
+            let fa = ''; if (msg.files && msg.files.length) { msg.files.forEach(f => { fa += `<div class="file-attachment"><span>${utils.getFileIcon(f.name)}</span><span class="file-name">${utils.escapeHtml(f.name)}</span><span class="file-size">${utils.formatFileSize(f.size)}</span></div>`; }); }
+            let ah = '';
+            if (role === 'user') {
+                const hv = msg.versions && msg.versions.length > 1, vi = msg.currentVersionIndex || 0, tv = msg.versions ? msg.versions.length : 1;
+                let vs = ''; if (hv) vs = `<span class="version-switcher"><button class="ver-btn ver-prev" data-index="${index}" ${vi === 0 ? 'disabled' : ''}>⟨</button><span class="ver-info">${vi + 1}/${tv}</span><button class="ver-btn ver-next" data-index="${index}" ${vi >= tv - 1 ? 'disabled' : ''}>⟩</button></span>`;
+                ah = `<div class="message-actions">${vs}</div>`;
             }
-            
-            if (yesterday.length > 0) {
-                html += '<div class="history-date">昨天</div>';
-                yesterday.forEach(chat => {
-                    html += renderHistoryItem(chat);
-                });
-            }
-            
-            if (older.length > 0) {
-                html += '<div class="history-date">更早</div>';
-                older.forEach(chat => {
-                    html += renderHistoryItem(chat);
-                });
-            }
-            
-            historyList.innerHTML = html;
-            
-            document.querySelectorAll('.history-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('delete-chat')) return;
-                    const chatId = item.dataset.id;
-                    if (chatId) switchToChat(chatId);
-                    if (window.innerWidth <= 768) toggleSidebar();
-                });
-            });
-        }
-        
-        function renderHistoryItem(chat) {
-            const isActive = currentChatId === chat.id;
-            const title = chat.title || '新对话';
-            return `
-                <div class="history-item ${isActive ? 'active' : ''}" data-id="${chat.id}">
-                    <span class="history-title">${escapeHtml(title)}</span>
-                    <button class="delete-chat" onclick="deleteChat('${chat.id}', event)">🗑️</button>
-                </div>
-            `;
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function saveCurrentChat() {
-            if (!currentChatId) return;
-            
-            if (currentMessages.length > 0) {
-                const firstUserMsg = currentMessages.find(m => m.role === 'user');
-                if (firstUserMsg && allChats[currentChatId].title === '新对话') {
-                    const title = firstUserMsg.content.slice(0, 30) + (firstUserMsg.content.length > 30 ? '...' : '');
-                    allChats[currentChatId].title = title;
+            div.innerHTML = `<div class="message-content"><div class="message-row"><div class="avatar">${av}</div><div class="text">${utils.escapeHtml(content)}</div></div>${fa}${ah}</div>`;
+            DOM.messagesContainer.appendChild(div);
+            this.bindMessageEvents(div, role, index, content);
+            return div;
+        },
+        appendWechatMessage(msg, index) {
+            const role = msg.role, content = getMessageContent(msg);
+            const div = document.createElement('div'); div.className = `message wechat-msg ${role}`; div.dataset.index = index;
+            let timeHtml = '';
+            const thisTime = msg._timestamp || 0;
+            if (index > 0) {
+                const prevMsg = state.currentMessages[index - 1];
+                if (prevMsg && prevMsg.role !== 'divider') {
+                    const prevTime = prevMsg._timestamp || 0;
+                    if (thisTime - prevTime > 60000) {
+                        timeHtml = `<div class="wechat-time-divider"><span>${this._formatTime(thisTime)}</span></div>`;
+                    }
                 }
+            } else if (thisTime) {
+                timeHtml = `<div class="wechat-time-divider"><span>${this._formatTime(thisTime)}</span></div>`;
             }
-            
-            allChats[currentChatId] = {
-                ...allChats[currentChatId],
-                messages: [...currentMessages],
-                updatedAt: new Date().toISOString()
-            };
-            saveAllChats();
-            renderHistoryList();
-        }
-
-        function saveAllChats() {
-            localStorage.setItem(STORAGE_KEYS.ALL_CHATS, JSON.stringify(allChats));
-        }
-
-        function loadAllChats() {
-            const saved = localStorage.getItem(STORAGE_KEYS.ALL_CHATS);
-            if (saved) {
-                allChats = JSON.parse(saved);
-            } else {
-                allChats = {};
+            const av = role === 'user' ? '👤' : '✨';
+            let regenerHtml = '';
+            if (role === 'assistant') { regenerHtml = `<div class="bubble-actions"><button class="bubble-btn regen-bubble-btn" data-index="${index}" title="重新生成">↻</button></div>`; }
+            const hv = role === 'user' && msg.versions && msg.versions.length > 1;
+            let verHtml = '';
+            if (hv) { const vi = msg.currentVersionIndex || 0, tv = msg.versions.length; verHtml = `<div class="bubble-actions"><button class="bubble-btn ver-prev-bubble" data-index="${index}" ${vi === 0 ? 'disabled' : ''}>⟨</button><span style="font-size:11px;opacity:0.6;">${vi + 1}/${tv}</span><button class="bubble-btn ver-next-bubble" data-index="${index}" ${vi >= tv - 1 ? 'disabled' : ''}>⟩</button></div>`; }
+            div.innerHTML = timeHtml + `<div class="wechat-avatar">${av}</div><div class="wechat-bubble">${utils.escapeHtml(content)}${regenerHtml}${verHtml}</div>`;
+            DOM.messagesContainer.appendChild(div);
+            this.bindMessageEvents(div, role, index, content);
+            return div;
+        },
+        _formatTime(ts) {
+            const d = new Date(ts);
+            return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
+                String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        },
+        bindMessageEvents(div, role, index, content) {
+            const bubble = div.querySelector('.wechat-bubble') || div.querySelector('.text');
+            if (bubble) {
+                bubble.addEventListener('contextmenu', e => { e.preventDefault(); state.contextMenuTarget = { index, role, content, div }; ui.showContextMenu(e.clientX, e.clientY); });
+                let longPressTimer;
+                bubble.addEventListener('touchstart', e => { longPressTimer = setTimeout(() => { state.contextMenuTarget = { index, role, content, div }; ui.showContextMenu(e.touches[0].clientX, e.touches[0].clientY); }, 500); });
+                bubble.addEventListener('touchend', () => clearTimeout(longPressTimer));
+                bubble.addEventListener('touchmove', () => clearTimeout(longPressTimer));
             }
-        }
-
-        async function sendMessage(editedMessage = null, editIndex = null) {
-            let message;
-            
-            if (editedMessage !== null && editIndex !== null) {
-                message = editedMessage;
-                currentMessages[editIndex].content = message;
-                currentMessages = currentMessages.slice(0, editIndex + 1);
-                rerenderMessages();
-            } else {
-                message = userInput.value.trim();
-                if (!message) return;
-                userInput.value = '';
-                userInput.style.height = 'auto';
-                
-                if (messagesContainer.querySelector('.welcome-message')) {
-                    messagesContainer.innerHTML = '';
-                }
-                
-                addMessageToUI(message, 'user');
-                currentMessages.push({ role: 'user', content: message });
-                saveCurrentChat();
+            if (role === 'assistant') {
+                const avatar = div.querySelector('.avatar') || div.querySelector('.wechat-avatar');
+                if (avatar) avatar.addEventListener('click', () => ui.openPersonaModal());
             }
+            div.querySelector('.regen-bubble-btn')?.addEventListener('click', e => { e.stopPropagation(); ui.openRegenerateModal(index); });
+            div.querySelector('.ver-prev-bubble')?.addEventListener('click', e => { e.stopPropagation(); ui.switchVersion(index, -1); });
+            div.querySelector('.ver-next-bubble')?.addEventListener('click', e => { e.stopPropagation(); ui.switchVersion(index, 1); });
+            div.querySelector('.ver-prev')?.addEventListener('click', () => ui.switchVersion(index, -1));
+            div.querySelector('.ver-next')?.addEventListener('click', () => ui.switchVersion(index, 1));
+        },
+        showContextMenu(x, y) {
+            const menu = DOM.contextMenu;
+            menu.style.left = Math.min(x, window.innerWidth - 160) + 'px';
+            menu.style.top = Math.min(y, window.innerHeight - 80) + 'px';
+            menu.classList.add('active');
+            const editItem = menu.querySelector('[data-action="edit"]');
+            if (editItem) editItem.style.display = (state.contextMenuTarget && state.contextMenuTarget.role === 'user') ? 'flex' : 'none';
+        },
+        switchVersion(i, d) { const m = state.currentMessages[i]; if (m && switchMessageVersion(m, d)) { contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); this.renderMessages(); contextManager.updateContextBar(); } },
+        startEditMessage(i) { const m = state.currentMessages[i]; if (!m) return; state.pendingEdit = { index: i }; if (i < state.currentMessages.length - 1) DOM.editConfirmModal.classList.add('active'); else this.doEditMessage(i, false); },
+        doEditMessage(index, resetFollowing) {
+            const msg = state.currentMessages[index]; const content = getMessageContent(msg);
+            const textDiv = DOM.messagesContainer.querySelector(`.message[data-index="${index}"] .text, .message[data-index="${index}"] .wechat-bubble`);
+            if (!textDiv) return;
+            const ta = document.createElement('textarea'); ta.className = 'edit-textarea'; ta.value = content; ta.rows = Math.min(content.split('\n').length + 1, 8);
+            const ea = document.createElement('div'); ea.className = 'edit-actions';
+            const saveBtn = document.createElement('button'); saveBtn.className = 'edit-save'; saveBtn.textContent = '保存';
+            const cancelBtn = document.createElement('button'); cancelBtn.className = 'edit-cancel'; cancelBtn.textContent = '取消';
+            ea.appendChild(saveBtn); ea.appendChild(cancelBtn);
+            textDiv.style.display = 'none'; textDiv.parentElement.appendChild(ta); textDiv.parentElement.appendChild(ea);
+            ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+            const cleanup = () => { ta.remove(); ea.remove(); textDiv.style.display = ''; };
+            saveBtn.onclick = async () => { const c = ta.value.trim(); if (!c) return; cleanup(); await chatActions.handleEditConfirm(index, c, resetFollowing); };
+            cancelBtn.onclick = cleanup;
+        },
+        openRegenerateModal(assistantIdx) {
+            let userIdx = -1;
+            for (let i = assistantIdx - 1; i >= 0; i--) { if (state.currentMessages[i].role === 'user') { userIdx = i; break; } }
+            state.pendingRegenerate = { assistantIndex: assistantIdx, userIndex: userIdx };
+            DOM.regenerateInput.value = ''; DOM.regenerateModal.classList.add('active');
+            setTimeout(() => DOM.regenerateInput.focus(), 100);
+        },
+        openPersonaModal() {
+            DOM.personaModalInput.value = personaManager.getPersona();
+            DOM.personaModal.classList.add('active');
+            contextManager.updateContextBar(); tokenManager.updateDisplay(); styleManager.updateBgPreview();
+            setTimeout(() => DOM.personaModalInput.focus(), 100);
+        },
+        showLoading() {
+            const d = document.createElement('div');
+            d.className = state.uiStyle === 'wechat' ? 'message wechat-msg assistant' : 'message assistant';
+            d.id = 'loading-message';
+            d.innerHTML = state.uiStyle === 'wechat'
+                ? '<div class="wechat-avatar">✨</div><div class="wechat-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>'
+                : '<div class="message-content"><div class="message-row"><div class="avatar">✨</div><div class="text"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div></div>';
+            DOM.messagesContainer.appendChild(d); this.scrollToBottom();
+        },
+        hideLoading() { const e = document.getElementById('loading-message'); if (e) e.remove(); },
+        renderHistory() {
+            if (!DOM.historyList) return;
+            const chats = Object.values(state.allChats).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+            if (!chats.length) { DOM.historyList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">暂无对话</div>'; return; }
+            const g = { today: [], yesterday: [], older: [] }, n = new Date(), ts = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(), ys = ts - 86400000;
+            chats.forEach(c => { const t = new Date(c.updatedAt).getTime(); if (t >= ts) g.today.push(c); else if (t >= ys) g.yesterday.push(c); else g.older.push(c); });
+            let h = ''; const l = { today: '今天', yesterday: '昨天', older: '更早' };
+            for (const [k, cs] of Object.entries(g)) { if (!cs.length) continue; h += `<div class="history-date">${l[k]}</div>`; cs.forEach(c => { const a = c.id === state.currentChatId; h += `<div class="history-item ${a ? 'active' : ''}" data-id="${c.id}"><span class="history-title">${utils.escapeHtml(c.note || c.title || '新对话')}</span><button class="delete-chat" data-id="${c.id}">×</button></div>`; }); }
+            DOM.historyList.innerHTML = h;
+            DOM.historyList.querySelectorAll('.history-item').forEach(it => it.addEventListener('click', e => { if (e.target.closest('.delete-chat')) return; chatManager.switchTo(it.dataset.id); if (window.innerWidth <= 768) ui.toggleSidebar(false); }));
+            DOM.historyList.querySelectorAll('.delete-chat').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); if (confirm('确定删除？')) chatManager.delete(b.dataset.id); }));
+        },
+        toggleSidebar(f) { const v = DOM.sidebar.classList.contains('mobile-visible'); const s = typeof f === 'boolean' ? f : !v; if (s) { DOM.sidebar.classList.add('mobile-visible'); DOM.sidebarOverlay.classList.add('active'); } else { DOM.sidebar.classList.remove('mobile-visible'); DOM.sidebarOverlay.classList.remove('active'); } },
+        scrollToBottom() { DOM.messagesContainer.scrollTop = DOM.messagesContainer.scrollHeight; },
+        setLoadingState(l) { state.isLoading = l; DOM.sendBtn.disabled = l; DOM.userInput.disabled = l; DOM.attachBtn.disabled = l; }
+    };
 
-            const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-            if (!apiKey) {
-                alert('请先在设置中配置 API Key');
-                settingsModal.style.display = 'flex';
-                return;
-            }
-
-            const loadingId = addLoadingMessage();
-
+    const chatActions = {
+        async handleEditConfirm(index, newContent, resetFollowing) {
+            const msg = state.currentMessages[index]; addMessageVersion(msg, newContent);
+            if (resetFollowing) { state.currentMessages = state.currentMessages.slice(0, index + 1); msg.branchParentId = msg.branchParentId || 'branch_' + utils.generateId(); }
+            contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); ui.renderMessages(); contextManager.updateContextBar();
+        },
+        async sendMessage() {
+            if (state.isLoading) return;
+            const msg = DOM.userInput.value.trim(), hf = state.pendingFiles.length > 0; if (!msg && !hf) return;
+            DOM.userInput.value = ''; DOM.userInput.style.height = 'auto';
+            const w = DOM.messagesContainer.querySelector('.welcome-message'); if (w) w.remove();
+            let fc = msg; if (hf) { const fctx = fileManager.buildContext(); fc = msg ? msg + fctx : '请分析以下文件：' + fctx; }
+            const mObj = createMessage('user', fc); mObj.files = state.pendingFiles.map(f => ({ name: f.name, size: f.size })); mObj.epoch = state.contextEpoch;
+            state.currentMessages.push(mObj); fileManager.clear();
+            contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); ui.renderMessages(); ui.scrollToBottom(); contextManager.updateContextBar();
+            const { apiKey } = api.getConfig(); if (!apiKey) { utils.showToast('请先配置 API Key'); DOM.settingsModal.classList.add('active'); return; }
+            ui.setLoadingState(true); ui.showLoading();
             try {
-                const result = await callDeepSeekAPI(currentMessages);
-                removeLoadingMessage(loadingId);
-                
-                addTokens(result.promptTokens, result.completionTokens);
-                
-                addMessageToUI(result.content, 'assistant');
-                currentMessages.push({ role: 'assistant', content: result.content });
-                saveCurrentChat();
-            } catch (error) {
-                removeLoadingMessage(loadingId);
-                addMessageToUI('错误: ' + error.message, 'assistant');
-                console.error(error);
-            }
-        }
-
-        async function regenerateLastResponse() {
-            if (isRegenerating) return;
-            isRegenerating = true;
-
-            let lastUserIndex = -1;
-            for (let i = currentMessages.length - 1; i >= 0; i--) {
-                if (currentMessages[i].role === 'user') {
-                    lastUserIndex = i;
-                    break;
-                }
-            }
-
-            if (lastUserIndex === -1) {
-                isRegenerating = false;
-                return;
-            }
-
-            currentMessages = currentMessages.slice(0, lastUserIndex + 1);
-            rerenderMessages();
-
-            const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-            if (!apiKey) {
-                alert('请先在设置中配置 API Key');
-                settingsModal.style.display = 'flex';
-                isRegenerating = false;
-                return;
-            }
-
-            const loadingId = addLoadingMessage();
-
+                const result = await api.callDeepSeek(contextManager.buildApiMessages());
+                ui.hideLoading(); tokenManager.add(result.promptTokens, result.completionTokens);
+                const am = createMessage('assistant', result.content); am.epoch = state.contextEpoch;
+                state.currentMessages.push(am); contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); ui.renderMessages(); contextManager.updateContextBar(); ui.scrollToBottom();
+            } catch (e) { ui.hideLoading(); const em = createMessage('assistant', '❌ ' + e.message); state.currentMessages.push(em); ui.renderMessages(); }
+            finally { ui.setLoadingState(false); }
+        },
+        async regenerate(userIndex, assistantIndex, improvementNote) {
+            if (state.isLoading) return;
+            state.currentMessages = state.currentMessages.slice(0, userIndex + 1);
+            if (improvementNote && improvementNote.trim()) { const sm = createMessage('system', '用户改进需求：' + improvementNote.trim()); sm.epoch = state.contextEpoch; state.currentMessages.push(sm); }
+            contextManager.syncFromDisplayMessages(); ui.renderMessages(); contextManager.updateContextBar();
+            const { apiKey } = api.getConfig(); if (!apiKey) { utils.showToast('请先配置 API Key'); return; }
+            ui.setLoadingState(true); ui.showLoading();
             try {
-                const result = await callDeepSeekAPI(currentMessages);
-                removeLoadingMessage(loadingId);
-                
-                addTokens(result.promptTokens, result.completionTokens);
-                
-                addMessageToUI(result.content, 'assistant');
-                currentMessages.push({ role: 'assistant', content: result.content });
-                saveCurrentChat();
-            } catch (error) {
-                removeLoadingMessage(loadingId);
-                addMessageToUI('错误: ' + error.message, 'assistant');
-            }
-
-            isRegenerating = false;
+                const result = await api.callDeepSeek(contextManager.buildApiMessages());
+                ui.hideLoading(); tokenManager.add(result.promptTokens, result.completionTokens);
+                const am = createMessage('assistant', result.content); am.epoch = state.contextEpoch;
+                state.currentMessages.push(am); contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); ui.renderMessages(); contextManager.updateContextBar(); ui.scrollToBottom();
+            } catch (e) { ui.hideLoading(); utils.showToast(e.message); }
+            finally { ui.setLoadingState(false); }
+        },
+        async reactivatePersona() {
+            const persona = personaManager.getPersona(); if (!persona) { utils.showToast('请先设置人设（点击AI头像）'); ui.openPersonaModal(); return; }
+            if (state.isLoading) return;
+            const sysMsg = createMessage('system', '【请重新严格遵循以下人设】\n' + persona); sysMsg.epoch = state.contextEpoch;
+            state.currentMessages.push(sysMsg); contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); contextManager.updateContextBar();
+            ui.setLoadingState(true); ui.showLoading();
+            try {
+                const result = await api.callDeepSeek(contextManager.buildApiMessages());
+                ui.hideLoading(); tokenManager.add(result.promptTokens, result.completionTokens);
+                state.currentMessages.pop();
+                const am = createMessage('assistant', result.content); am.epoch = state.contextEpoch;
+                state.currentMessages.push(am); contextManager.syncFromDisplayMessages(); chatManager.saveCurrent(); ui.renderMessages(); contextManager.updateContextBar(); ui.scrollToBottom();
+                utils.showToast('人设已重新激活');
+            } catch (e) { ui.hideLoading(); state.currentMessages.pop(); utils.showToast(e.message); }
+            finally { ui.setLoadingState(false); }
+        },
+        async summarizeContext(extraNote) {
+            if (state.isLoading) return;
+            const msgs = state.currentMessages.filter(m => m.role !== 'divider');
+            if (msgs.length < 2) { utils.showToast('对话太少，无需压缩'); return; }
+            const summaryRequest = [{ role: 'system', content: '用200字以内总结以下对话核心内容。只输出总结。' }, ...msgs.map(m => ({ role: m.role, content: getMessageContent(m) }))];
+            const { apiKey } = api.getConfig(); if (!apiKey) { utils.showToast('请先配置 API Key'); return; }
+            ui.setLoadingState(true);
+            try {
+                const result = await api.callDeepSeek(summaryRequest); tokenManager.add(result.promptTokens, result.completionTokens);
+                state.pendingSummary = { summary: result.content, extraNote: extraNote || '' };
+                DOM.summaryEditInput.value = result.content; DOM.summaryEditExtra.value = extraNote || '';
+                DOM.summaryEditModal.classList.add('active'); setTimeout(() => DOM.summaryEditInput.focus(), 100);
+            } catch (e) { utils.showToast('压缩失败：' + e.message); }
+            finally { ui.setLoadingState(false); }
+        },
+        async confirmSummary(editedSummary, editedExtra) {
+            if (!state.pendingSummary) return;
+            const dividerMsg = { role: 'divider', content: '', versions: [''], currentVersionIndex: 0, branchParentId: null, files: [], epoch: state.contextEpoch, _timestamp: Date.now() };
+            state.currentMessages.push(dividerMsg); state.contextEpoch++;
+            let sc = '【之前剧情摘要】\n' + editedSummary.trim();
+            if (editedExtra && editedExtra.trim()) sc += '\n\n【剧情走向】\n' + editedExtra.trim();
+            const persona = personaManager.getPersona(); if (persona) sc = '【人设】\n' + persona + '\n\n' + sc;
+            const summaryMsg = createMessage('system', sc); summaryMsg.epoch = state.contextEpoch;
+            state.currentMessages.push(summaryMsg); contextManager.syncFromDisplayMessages(); chatManager.saveCurrent();
+            ui.renderMessages(); contextManager.updateContextBar(); ui.scrollToBottom();
+            utils.showToast('记忆压缩完成！'); state.pendingSummary = null;
         }
+    };
 
-        function editUserMessage(index, content) {
-            const messageDiv = document.querySelector(`.message[data-index="${index}"]`);
-            if (!messageDiv) return;
-            
-            const textDiv = messageDiv.querySelector('.text');
-            const originalContent = textDiv.textContent;
-            
-            const textarea = document.createElement('textarea');
-            textarea.className = 'edit-textarea';
-            textarea.value = originalContent;
-            textarea.rows = 3;
-            
-            const editActions = document.createElement('div');
-            editActions.className = 'edit-actions';
-            
-            const saveBtn = document.createElement('button');
-            saveBtn.textContent = '保存并重新发送';
-            saveBtn.className = 'edit-save';
-            
-            const cancelBtn = document.createElement('button');
-            cancelBtn.textContent = '取消';
-            cancelBtn.className = 'edit-cancel';
-            
-            editActions.appendChild(saveBtn);
-            editActions.appendChild(cancelBtn);
-            
-            textDiv.style.display = 'none';
-            textDiv.parentElement.appendChild(textarea);
-            textDiv.parentElement.appendChild(editActions);
-            
-            saveBtn.onclick = async () => {
-                const newContent = textarea.value.trim();
-                if (!newContent) return;
-                
-                textarea.remove();
-                editActions.remove();
-                textDiv.style.display = 'block';
-                
-                await sendMessage(newContent, index);
+    const dataManager = {
+        exportData() {
+            const obj = { version: '9.0', exportTime: new Date().toISOString(), allChats: state.allChats, currentChatId: state.currentChatId, tokenStats: state.tokenStats, uiStyle: state.uiStyle, wechatBg: state.wechatBg, dsBg: state.dsBg };
+            const s = JSON.stringify(obj, null, 2), b = new Blob([s], { type: 'application/json' }), u = URL.createObjectURL(b);
+            const a = document.createElement('a'); a.href = u; a.download = `deepseek-backup-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(u); utils.showToast('导出成功！');
+        },
+        importData(file) {
+            if (!file) return; const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const imp = JSON.parse(e.target.result); if (!imp.allChats) throw new Error('格式不正确');
+                    let ad = 0, mg = 0;
+                    for (const [id, d] of Object.entries(imp.allChats)) { if (!state.allChats[id]) { state.allChats[id] = d; ad++; } else { const et = new Date(state.allChats[id].updatedAt).getTime(), it = new Date(d.updatedAt).getTime(); if (it > et) state.allChats[id] = d; mg++; } }
+                    if (imp.tokenStats) { state.tokenStats.prompt += imp.tokenStats.prompt || 0; state.tokenStats.completion += imp.tokenStats.completion || 0; tokenManager.save(); tokenManager.updateDisplay(); }
+                    if (imp.wechatBg) { state.wechatBg = imp.wechatBg; storage.set(CONFIG.STORAGE_KEYS.WECHAT_BG, imp.wechatBg); }
+                    if (imp.dsBg) { state.dsBg = imp.dsBg; storage.set(CONFIG.STORAGE_KEYS.DS_BG, imp.dsBg); }
+                    chatManager.saveAll(); if (imp.currentChatId && state.allChats[imp.currentChatId]) chatManager.switchTo(imp.currentChatId);
+                    styleManager.apply(); ui.renderHistory(); utils.showToast(`导入完成！新增${ad}个，合并${mg}个`);
+                } catch (err) { utils.showToast('导入失败：' + err.message); }
             };
-            
-            cancelBtn.onclick = () => {
-                textarea.remove();
-                editActions.remove();
-                textDiv.style.display = 'block';
+            r.readAsText(file); DOM.importFile.value = '';
+        }
+    };
+
+    function setupNoteEditing() {
+        const header = DOM.wechatHeader;
+        if (!header) return;
+        header.addEventListener('click', function(e) {
+            const display = e.target.closest('#chatNoteDisplay');
+            if (!display) return;
+            if (display.querySelector('input')) return;
+            const note = state.allChats[state.currentChatId]?.note || state.allChats[state.currentChatId]?.title || '';
+            const input = document.createElement('input');
+            input.className = 'chat-note-input';
+            input.value = note;
+            input.id = 'chatNoteInput';
+            display.replaceWith(input);
+            input.focus();
+            input.select();
+            const save = () => {
+                const v = input.value.trim() || '未命名对话';
+                chatManager.updateNote(v);
+                const span = document.createElement('span');
+                span.className = 'chat-note';
+                span.id = 'chatNoteDisplay';
+                span.textContent = v;
+                input.replaceWith(span);
             };
-        }
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); save(); } });
+        });
+    }
 
-        function rerenderMessages() {
-            messagesContainer.innerHTML = '';
-            for (let i = 0; i < currentMessages.length; i++) {
-                const msg = currentMessages[i];
-                addMessageToUI(msg.content, msg.role, i);
-            }
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
+    function bindEvents() {
+        DOM.userInput.addEventListener('keydown', e => { if (shortcutManager.shouldSend(e)) { e.preventDefault(); chatActions.sendMessage(); } });
+        DOM.sendBtn.addEventListener('click', () => chatActions.sendMessage());
+        DOM.userInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
+        DOM.attachBtn.addEventListener('click', () => DOM.chatFileInput.click());
+        DOM.chatFileInput.addEventListener('change', e => { if (e.target.files.length) { fileManager.addFiles(e.target.files); DOM.chatFileInput.value = ''; } });
 
-        async function callDeepSeekAPI(messages) {
-            const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-            const apiUrl = localStorage.getItem(STORAGE_KEYS.API_URL);
+        // 文件拖拽
+        const iw = DOM.inputWrapper;
+        document.addEventListener('dragover', e => { e.preventDefault(); DOM.dragOverlay.classList.add('active'); });
+        document.addEventListener('dragleave', e => { if (e.clientX === 0 && e.clientY === 0) DOM.dragOverlay.classList.remove('active'); });
+        document.addEventListener('drop', e => {
+            e.preventDefault();
+            DOM.dragOverlay.classList.remove('active');
+            DOM.inputWrapper.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files && files.length) fileManager.addFiles(files);
+        });
+        iw.addEventListener('dragover', e => { e.stopPropagation(); iw.classList.add('drag-over'); });
+        iw.addEventListener('dragleave', e => { e.stopPropagation(); iw.classList.remove('drag-over'); });
+        iw.addEventListener('drop', e => { e.stopPropagation(); iw.classList.remove('drag-over'); });
 
-            const requestBody = {
-                model: 'deepseek-chat',
-                messages: messages,
-                stream: false,
-                temperature: 0.7
-            };
+        DOM.menuBtn.addEventListener('click', () => ui.toggleSidebar());
+        DOM.sidebarOverlay.addEventListener('click', () => ui.toggleSidebar(false));
+        DOM.styleToggleBtn.addEventListener('click', () => styleManager.toggle());
+        DOM.settingsBtn.addEventListener('click', () => DOM.settingsModal.classList.add('active'));
+        DOM.modalCloseBtn.addEventListener('click', () => DOM.settingsModal.classList.remove('active'));
+        DOM.settingsModal.addEventListener('click', e => { if (e.target === DOM.settingsModal) DOM.settingsModal.classList.remove('active'); });
+        DOM.saveApiBtn.addEventListener('click', () => { const ak = DOM.apiKeyInput.value.trim(), au = DOM.apiUrlInput.value.trim(); if (!ak) { utils.showToast('请输入 API Key'); return; } storage.set(CONFIG.STORAGE_KEYS.API_KEY, ak); storage.set(CONFIG.STORAGE_KEYS.API_URL, au || CONFIG.DEFAULT_API_URL); DOM.settingsModal.classList.remove('active'); utils.showToast('API 设置已保存！'); });
+        DOM.shortcutSettingsBtn.addEventListener('click', () => { DOM.sendShortcutSelect.value = state.sendShortcut; DOM.shortcutModal.classList.add('active'); });
+        DOM.shortcutCloseBtn.addEventListener('click', () => DOM.shortcutModal.classList.remove('active'));
+        DOM.shortcutModal.addEventListener('click', e => { if (e.target === DOM.shortcutModal) DOM.shortcutModal.classList.remove('active'); });
+        DOM.saveShortcutBtn.addEventListener('click', () => { shortcutManager.save(DOM.sendShortcutSelect.value); DOM.shortcutModal.classList.remove('active'); DOM.userInput.placeholder = shortcutManager.getPlaceholder(); utils.showToast('快捷键已保存'); });
+        DOM.personaConfirmBtn.addEventListener('click', () => { personaManager.setPersona(DOM.personaModalInput.value.trim()); DOM.personaModal.classList.remove('active'); utils.showToast(personaManager.getPersona() ? '人设已确认' : '人设已清除'); });
+        DOM.personaActivateBtn.addEventListener('click', () => { personaManager.setPersona(DOM.personaModalInput.value.trim()); DOM.personaModal.classList.remove('active'); chatActions.reactivatePersona(); });
+        DOM.personaCancelBtn.addEventListener('click', () => DOM.personaModal.classList.remove('active'));
+        DOM.personaCloseBtn.addEventListener('click', () => DOM.personaModal.classList.remove('active'));
+        DOM.personaModal.addEventListener('click', e => { if (e.target === DOM.personaModal) DOM.personaModal.classList.remove('active'); });
+        DOM.personaSummarizeBtn.addEventListener('click', () => { DOM.personaModal.classList.remove('active'); state.pendingSummary = null; DOM.summarizeExtraInput.value = ''; DOM.summarizeModal.classList.add('active'); setTimeout(() => DOM.summarizeExtraInput.focus(), 100); });
+        DOM.reactivatePersonaBtn.addEventListener('click', () => chatActions.reactivatePersona());
+        DOM.summarizeBtn.addEventListener('click', () => { state.pendingSummary = null; DOM.summarizeExtraInput.value = ''; DOM.summarizeModal.classList.add('active'); setTimeout(() => DOM.summarizeExtraInput.focus(), 100); });
+        DOM.newChatBtn.addEventListener('click', () => { chatManager.create(); if (window.innerWidth <= 768) ui.toggleSidebar(false); });
+        DOM.resetTokenBtn.addEventListener('click', () => { if (confirm('确定重置？')) { tokenManager.reset(); utils.showToast('已重置'); } });
+        DOM.exportBtn.addEventListener('click', () => dataManager.exportData());
+        DOM.importBtn.addEventListener('click', () => DOM.importFile.click());
+        DOM.importFile.addEventListener('change', e => { if (e.target.files[0]) dataManager.importData(e.target.files[0]); });
+        DOM.editConfirmYes.addEventListener('click', () => { DOM.editConfirmModal.classList.remove('active'); const idx = state.pendingEdit?.index; state.pendingEdit = null; if (idx !== undefined && idx !== null) ui.doEditMessage(idx, true); });
+        DOM.editConfirmNo.addEventListener('click', () => { DOM.editConfirmModal.classList.remove('active'); const idx = state.pendingEdit?.index; state.pendingEdit = null; if (idx !== undefined && idx !== null) ui.doEditMessage(idx, false); });
+        DOM.editConfirmCloseBtn.addEventListener('click', () => { DOM.editConfirmModal.classList.remove('active'); state.pendingEdit = null; });
+        DOM.editConfirmModal.addEventListener('click', e => { if (e.target === DOM.editConfirmModal) { DOM.editConfirmModal.classList.remove('active'); state.pendingEdit = null; } });
+        DOM.regenerateConfirm.addEventListener('click', () => { DOM.regenerateModal.classList.remove('active'); if (state.pendingRegenerate) chatActions.regenerate(state.pendingRegenerate.userIndex, state.pendingRegenerate.assistantIndex, DOM.regenerateInput.value.trim()); state.pendingRegenerate = null; });
+        DOM.regenerateCancel.addEventListener('click', () => { DOM.regenerateModal.classList.remove('active'); state.pendingRegenerate = null; });
+        DOM.regenerateCloseBtn.addEventListener('click', () => { DOM.regenerateModal.classList.remove('active'); state.pendingRegenerate = null; });
+        DOM.regenerateModal.addEventListener('click', e => { if (e.target === DOM.regenerateModal) { DOM.regenerateModal.classList.remove('active'); state.pendingRegenerate = null; } });
+        DOM.summarizeConfirm.addEventListener('click', () => { DOM.summarizeModal.classList.remove('active'); chatActions.summarizeContext(DOM.summarizeExtraInput.value.trim()); });
+        DOM.summarizeCancel.addEventListener('click', () => { DOM.summarizeModal.classList.remove('active'); state.pendingSummary = null; });
+        DOM.summarizeCloseBtn.addEventListener('click', () => { DOM.summarizeModal.classList.remove('active'); state.pendingSummary = null; });
+        DOM.summarizeModal.addEventListener('click', e => { if (e.target === DOM.summarizeModal) { DOM.summarizeModal.classList.remove('active'); state.pendingSummary = null; } });
+        DOM.summaryEditConfirm.addEventListener('click', () => { DOM.summaryEditModal.classList.remove('active'); chatActions.confirmSummary(DOM.summaryEditInput.value, DOM.summaryEditExtra.value); });
+        DOM.summaryEditCancel.addEventListener('click', () => { DOM.summaryEditModal.classList.remove('active'); state.pendingSummary = null; });
+        DOM.summaryEditCloseBtn.addEventListener('click', () => { DOM.summaryEditModal.classList.remove('active'); state.pendingSummary = null; });
+        DOM.summaryEditModal.addEventListener('click', e => { if (e.target === DOM.summaryEditModal) { DOM.summaryEditModal.classList.remove('active'); state.pendingSummary = null; } });
+        DOM.contextMenu.querySelector('[data-action="copy"]').addEventListener('click', async () => { if (state.contextMenuTarget && await utils.copyToClipboard(state.contextMenuTarget.content)) utils.showToast('已复制'); DOM.contextMenu.classList.remove('active'); });
+        DOM.contextMenu.querySelector('[data-action="edit"]').addEventListener('click', () => { if (state.contextMenuTarget && state.contextMenuTarget.role === 'user') ui.startEditMessage(state.contextMenuTarget.index); DOM.contextMenu.classList.remove('active'); });
+        DOM.changeBgBtn.addEventListener('click', () => DOM.bgImageInput.click());
+        DOM.clearBgBtn.addEventListener('click', () => { styleManager.clearBackground(); utils.showToast('背景已清除'); });
+        DOM.bgImageInput.addEventListener('change', e => {
+            const file = e.target.files[0]; if (!file) return;
+            if (!file.type.startsWith('image/')) { utils.showToast('请选择图片文件'); return; }
+            const reader = new FileReader();
+            reader.onload = ev => { styleManager.setBackground(ev.target.result); utils.showToast('背景已更新'); };
+            reader.readAsDataURL(file); DOM.bgImageInput.value = '';
+        });
+        DOM.bgPreview.addEventListener('dragover', e => { e.preventDefault(); DOM.bgPreview.style.opacity = '0.6'; });
+        DOM.bgPreview.addEventListener('dragleave', e => { e.preventDefault(); DOM.bgPreview.style.opacity = '1'; });
+        DOM.bgPreview.addEventListener('drop', e => {
+            e.preventDefault(); e.stopPropagation(); DOM.bgPreview.style.opacity = '1';
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) { utils.showToast('请拖入图片文件'); return; }
+            const reader = new FileReader();
+            reader.onload = ev => { styleManager.setBackground(ev.target.result); utils.showToast('背景已更新'); };
+            reader.readAsDataURL(file);
+        });
+        setupNoteEditing();
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); DOM.settingsModal.classList.add('active'); }
+            if (e.key === 'Escape') closeAllModals();
+        });
+        document.addEventListener('click', () => DOM.contextMenu.classList.remove('active'));
+        window.addEventListener('resize', () => { if (window.innerWidth > 768) ui.toggleSidebar(false); });
+    }
 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + apiKey
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || '请求失败');
-            }
-
-            const data = await response.json();
-            
-            const promptTokens = data.usage?.prompt_tokens || 0;
-            const completionTokens = data.usage?.completion_tokens || 0;
-            const content = data.choices[0].message.content;
-            
-            return {
-                content: content,
-                promptTokens: promptTokens,
-                completionTokens: completionTokens
-            };
-        }
-
-        function addMessageToUI(content, type, index = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ' + type;
-            
-            const finalIndex = (index !== null) ? index : currentMessages.length;
-            messageDiv.setAttribute('data-index', finalIndex);
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'message-row';
-
-            const avatar = document.createElement('div');
-            avatar.className = 'avatar';
-            avatar.textContent = type === 'user' ? '👤' : '✨';
-
-            const textDiv = document.createElement('div');
-            textDiv.className = 'text';
-            textDiv.textContent = content;
-
-            rowDiv.appendChild(avatar);
-            rowDiv.appendChild(textDiv);
-            contentDiv.appendChild(rowDiv);
-            
-            if (content !== '思考中...') {
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'message-actions';
-                
-                if (type === 'assistant') {
-                    const regenerateBtn = document.createElement('button');
-                    regenerateBtn.textContent = '🔄 重新生成';
-                    regenerateBtn.className = 'action-btn regenerate';
-                    regenerateBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        regenerateLastResponse();
-                    };
-                    actionsDiv.appendChild(regenerateBtn);
-                } else if (type === 'user') {
-                    const editBtn = document.createElement('button');
-                    editBtn.textContent = '✏️ 编辑';
-                    editBtn.className = 'action-btn edit';
-                    editBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        const msgIndex = parseInt(messageDiv.getAttribute('data-index'));
-                        editUserMessage(msgIndex, content);
-                    };
-                    actionsDiv.appendChild(editBtn);
-                }
-                
-                contentDiv.appendChild(actionsDiv);
-            }
-            
-            messageDiv.appendChild(contentDiv);
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            return messageDiv;
-        }
-
-        function addLoadingMessage() {
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message assistant';
-            loadingDiv.id = 'loading-message-' + Date.now();
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'message-row';
-
-            const avatar = document.createElement('div');
-            avatar.className = 'avatar';
-            avatar.textContent = '✨';
-
-            const textDiv = document.createElement('div');
-            textDiv.className = 'text';
-            textDiv.textContent = '思考中...';
-
-            rowDiv.appendChild(avatar);
-            rowDiv.appendChild(textDiv);
-            contentDiv.appendChild(rowDiv);
-            loadingDiv.appendChild(contentDiv);
-
-            messagesContainer.appendChild(loadingDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            return loadingDiv.id;
-        }
-
-        function removeLoadingMessage(loadingId) {
-            const loadingElement = document.getElementById(loadingId);
-            if (loadingElement && loadingElement.parentNode) {
-                loadingElement.remove();
-            }
-        }
-
-        window.deleteChat = deleteChat;
-    </script>
+    function init() {
+        cacheDomElements();
+        tokenManager.load(); tokenManager.updateDisplay();
+        shortcutManager.load(); styleManager.load();
+        chatManager.loadAll();
+        const sid = storage.get(CONFIG.STORAGE_KEYS.CURRENT_CHAT_ID);
+        if (sid && state.allChats[sid]) chatManager.switchTo(sid);
+        else if (Object.keys(state.allChats).length > 0) chatManager.switchTo(Object.keys(state.allChats)[0]);
+        else chatManager.create();
+        const ak = storage.get(CONFIG.STORAGE_KEYS.API_KEY, ''), au = storage.get(CONFIG.STORAGE_KEYS.API_URL, CONFIG.DEFAULT_API_URL);
+        if (ak) DOM.apiKeyInput.value = ak; if (au) DOM.apiUrlInput.value = au;
+        DOM.userInput.placeholder = shortcutManager.getPlaceholder();
+        ui.renderHistory(); contextManager.updateContextBar(); personaManager.updateAvatarStyle();
+        bindEvents(); DOM.userInput.focus();
+    }
+    document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
 </body>
 </html>
