@@ -803,11 +803,17 @@
                 const avatar = div.querySelector('.avatar') || div.querySelector('.wechat-avatar');
                 if (avatar) avatar.addEventListener('click', () => ui.openPersonaModal());
             }
-            div.querySelector('.regen-bubble-btn')?.addEventListener('click', e => { e.stopPropagation(); ui.openRegenerateModal(index); });
-            div.querySelector('.ver-prev-bubble')?.addEventListener('click', e => { e.stopPropagation(); ui.switchVersion(index, -1); });
-            div.querySelector('.ver-next-bubble')?.addEventListener('click', e => { e.stopPropagation(); ui.switchVersion(index, 1); });
-            div.querySelector('.ver-prev')?.addEventListener('click', () => ui.switchVersion(index, -1));
-            div.querySelector('.ver-next')?.addEventListener('click', () => ui.switchVersion(index, 1));
+            const regenBtn = div.querySelector('.regen-bubble-btn');
+            if (regenBtn) {
+                regenBtn.addEventListener('click', function (e) { e.stopPropagation(); ui.openRegenerateModal(index); });
+            } const vpb = div.querySelector('.ver-prev-bubble');
+            const vnb = div.querySelector('.ver-next-bubble');
+            const vp = div.querySelector('.ver-prev');
+            const vn = div.querySelector('.ver-next');
+            if (vpb) vpb.addEventListener('click', function (e) { e.stopPropagation(); ui.switchVersion(index, -1); });
+            if (vnb) vnb.addEventListener('click', function (e) { e.stopPropagation(); ui.switchVersion(index, 1); });
+            if (vp) vp.addEventListener('click', function () { ui.switchVersion(index, -1); });
+            if (vn) vn.addEventListener('click', function () { ui.switchVersion(index, 1); });
         },
         showContextMenu(x, y) {
             const menu = DOM.contextMenu;
