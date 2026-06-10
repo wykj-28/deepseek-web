@@ -356,7 +356,19 @@ buildApiMessages() {
         },
         showContextMenu(x,y){const m=DOM.contextMenu;m.style.left=Math.min(x,window.innerWidth-160)+'px';m.style.top=Math.min(y,window.innerHeight-80)+'px';m.classList.add('active');const ei=m.querySelector('[data-action="edit"]');if(ei)ei.style.display=(state.contextMenuTarget&&state.contextMenuTarget.role==='user')?'flex':'none';},
         switchVersion(i,d){const m=state.currentMessages[i];if(m&&switchMessageVersion(m,d)){contextManager.syncFromDisplayMessages(true);chatManager.saveCurrent();this.renderMessages();contextManager.updateContextBar();}},
-        startEditMessage(i){const m=state.currentMessages[i];if(!m)return;state.pendingEdit={index:i};if(i<state.currentMessages.length-1)DOM.editConfirmModal.classList.add('active');else this.doEditMessage(i,false);},
+startEditMessage(i) {
+    const m = state.currentMessages[i];
+    if (!m) return;
+    state.pendingEdit = { index: i };
+    // 判断这条消息后面是否还有其他消息（非隐藏、非分隔线）
+    const hasFollowing = state.currentMessages.slice(i + 1).some(msg => msg.role !== 'divider' && !msg.hidden);
+    if (hasFollowing) {
+        DOM.editConfirmModal.classList.add('active');
+    } else {
+        // 最后一条消息，直接编辑并发送
+        this.doEditMessage(i, true);
+    }
+},
         doEditMessage(index,resetFollowing){const msg=state.currentMessages[index];const content=getMessageContent(msg);const td=DOM.messagesContainer.querySelector(`.message[data-index="${index}"] .text, .message[data-index="${index}"] .wechat-bubble`);if(!td)return;const ta=document.createElement('textarea');ta.className='edit-textarea';ta.value=content;ta.rows=Math.min(content.split('\n').length+1,8);const ea=document.createElement('div');ea.className='edit-actions';const sb=document.createElement('button');sb.className='edit-save';sb.textContent='保存';const cb=document.createElement('button');cb.className='edit-cancel';cb.textContent='取消';ea.appendChild(sb);ea.appendChild(cb);td.style.display='none';td.parentElement.appendChild(ta);td.parentElement.appendChild(ea);ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);const cleanup=()=>{ta.remove();ea.remove();td.style.display='';};sb.onclick=async()=>{const c=ta.value.trim();if(!c)return;cleanup();await chatActions.handleEditConfirm(index,c,resetFollowing);};cb.onclick=cleanup;},
         openRegenerateModal(assistantIdx){let userIdx=-1;for(let i=assistantIdx-1;i>=0;i--){if(state.currentMessages[i].role==='user'){userIdx=i;break;}}state.pendingRegenerate={assistantIndex:assistantIdx,userIndex:userIdx};DOM.regenerateInput.value='';DOM.regenerateModal.classList.add('active');setTimeout(()=>DOM.regenerateInput.focus(),100);},
         openPersonaModal(){DOM.personaModalInput.value=personaManager.getPersona();DOM.personaModal.classList.add('active');contextManager.updateContextBar();tokenManager.updateDisplay();styleManager.updateBgPreview();setTimeout(()=>DOM.personaModalInput.focus(),100);},
