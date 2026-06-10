@@ -291,11 +291,6 @@ buildApiMessages() {
     const m = [];
     const s = personaManager.getSystemMessage();
     if (s && state.activeContextMessages.length === 0) m.push(s);
-    const n = new Date();
-    const t = n.getFullYear() + '年' + (n.getMonth() + 1) + '月' + n.getDate() + '日 ' +
-        '星期' + ['日','一','二','三','四','五','六'][n.getDay()] + ' ' +
-        String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
-    m.push({ role: 'system', content: '【当前时间：' + t + '】' });
     m.push(...state.activeContextMessages);
     return m;
 },
