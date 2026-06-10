@@ -287,7 +287,18 @@
         updateAvatarStyle(){const p=this.getPersona();document.querySelectorAll('.message.assistant .avatar,.message.wechat-msg.assistant .wechat-avatar').forEach(a=>{if(p)a.classList.add('has-persona');else a.classList.remove('has-persona');});}
     };
     const contextManager = {
-        buildApiMessages(){const m=[];const s=personaManager.getSystemMessage();if(s&&state.activeContextMessages.length===0)m.push(s);const n=new Date();const t=n.toLocaleString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'});m.push({role:'system',content:`【当前时间：${t}】`});m.push(...state.activeContextMessages);return m;},
+buildApiMessages() {
+    const m = [];
+    const s = personaManager.getSystemMessage();
+    if (s && state.activeContextMessages.length === 0) m.push(s);
+    const n = new Date();
+    const t = n.getFullYear() + '年' + (n.getMonth() + 1) + '月' + n.getDate() + '日 ' +
+        '星期' + ['日','一','二','三','四','五','六'][n.getDay()] + ' ' +
+        String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+    m.push({ role: 'system', content: '【当前时间：' + t + '】' });
+    m.push(...state.activeContextMessages);
+    return m;
+},
         syncFromDisplayMessages(force=false){const isCompressed=state.activeContextMessages.length===1&&state.activeContextMessages[0]?.role==='system'&&state.activeContextMessages[0]?.content?.includes('【');if(isCompressed)return;if(force||state.activeContextMessages.length===0||(state.activeContextMessages[0]&&state.activeContextMessages[0].role!=='system')){state.activeContextMessages=state.currentMessages.filter(m=>m.role!=='divider'&&!m.hidden).map(m=>({role:m.role,content:getMessageContent(m)}));}},
         estimateTotalTokens(){let t=0;this.buildApiMessages().forEach(m=>t+=utils.estimateTokens(m.content));return t;},
         updateContextBar(){const u=this.estimateTotalTokens(),p=Math.min((u/CONFIG.CONTEXT_WINDOW)*100,100);[DOM.contextBarFill,DOM.modalContextBarFill].forEach(b=>{if(!b)return;b.style.width=p+'%';b.classList.remove('warning','danger');if(p>90)b.classList.add('danger');else if(p>70)b.classList.add('warning');});}
